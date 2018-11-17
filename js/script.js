@@ -9,7 +9,6 @@ signUpButton.onclick = function(){
 	socket.emit('signUp', {name:signUpName.value}); 
 };
 
-
  
 // game
 class Board {
@@ -186,8 +185,71 @@ c.onmousemove = function(data, e){
 	board.onMouseMove(getMousePos(c, data), p);
 }
 
-socket.on('news', function (data) {
-	console.log(data);
+
+// chat
+
+var $window = $(window);
+var $messages = $('.messages'); // Messages area
+var $inputMessage = $('.inputMessage'); // Input message input box
+var $chatPage = $('.chat.page'); // The chatroom page
+
+var connected = false;
+var typing = false;
+var lastTypingTime;
+var $currentInput = $usernameInput.focus();
+
+const addParticipantsMessage = (data) => {
+	var message = '';
+	if (data.numUsers === 1) {
+		message += "there's 1 player";
+	} else {
+		message += "there are " + data.numUsers + " players";
+	}
+	log(message);
+}
+
+// sends a chat message
+const sendMessage = () => {
+	var message = $inputMessage.val();
+	// Prevent markup from being injected into the message
+	message = cleanInput(message);
+	// if there is a non-empty message and a socket connection
+	if (message && connected) {
+		$inputMessage.val('');
+		addChatMessage({
+			username: username,
+			message: message
+		});
+		// tell server to execute 'new message' and send along one parameter
+		socket.emit('new message', message);
+	}
+}
+
+// log a message
+const log = (message, options) => {
+	var $el = $('<li>').addClass('log').text(message);
+	addMessageElement($el, options);
+}
+
+
+
+
+
+// client
+var p = undefined;
+socket.on('signUpResponse', function (data) {
+	if (data.success){
+		signUpDiv.style.display = 'none';
+		p = new Player(data.socket);
+	}
+	else {
+		alert(data.msg);
+	}
+});
+
+socket.on('updateBoard', data => {
 	
+
+
 });
 
