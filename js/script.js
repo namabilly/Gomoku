@@ -1,4 +1,17 @@
+// connect
+var socket = io();
 
+// sign up
+var signUpDiv = document.getElementById("signUpDiv"); 
+var signUpName = document.getElementById("signUpName"); 
+var signUpButton = document.getElementById("signUpButton"); 
+signUpButton.onclick = function(){
+	socket.emit('signUp', {name:signUpName.value}); 
+};
+
+
+ 
+// game
 class Board {
 	constructor(position, size, format, color){
 		this.position = position; // {x, y}
@@ -140,12 +153,6 @@ c.style.border = "1px solid #DDDDDD";
 ctx.fillStyle = "#FFFFFF";
 ctx.fillRect(0, 0, 800, 800);
 
-ctx.fillStyle = "#AADDAA";
-ctx.fillRect(40, 40, 720, 720);
-
-ctx.fillStyle = "#FFFFFF";
-ctx.fillRect(98, 98, 604, 604);
-
 var board = new Board({x:100, y:100}, {width:15, height:15}, {spacing:43, lineWidth:2}, "#AADDAA");
 board.draw();
 
@@ -178,4 +185,9 @@ c.onmousemove = function(data, e){
 	var p = turn%2==0 ? p1 : p2;
 	board.onMouseMove(getMousePos(c, data), p);
 }
+
+socket.on('news', function (data) {
+	console.log(data);
+	
+});
 
