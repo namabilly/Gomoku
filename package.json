@@ -1,0 +1,24 @@
+{
+  "name": "Gomoku",
+  "version": "1.0.0",
+  "description": "gomoku",
+  "main": "app.js",
+  "dependencies": {
+    "express": "^4.16.3",
+    "socket.io": "^2.1.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/namabilly/Gomoku.git"
+  },
+  "author": "namabilly",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/namabilly/Gomoku/issues"
+  },
+  "homepage": "https://github.com/namabilly/Gomoku#readme"
+}
