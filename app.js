@@ -64,7 +64,7 @@ class Player {
 		Object.defineProperty(socket, 'name', {value:name});
 		new Player(socket);
 		console.log('New player ' + name + ' joined.');
-		socket.emit('signUpResponse', {success:true});
+		socket.emit('signUpResponse', {success:true, username:name});
 	}
 	static removePlayer(name){
 		delete Player.list[name];
@@ -98,7 +98,7 @@ io.sockets.on('connection', function (socket) {
 				Object.defineProperty(socket, 'name', {value:data.name});
 				Player.list[data.name].socket = socket;
 				console.log('Player ' + data.name + ' reconnected.');
-				socket.emit('signUpResponse', {success:true});
+				socket.emit('signUpResponse', {success:true, username:data.name});
 			}
 			else
 				socket.emit('signUpResponse', {success:false, msg:'name exists, please try another one.'}); 
@@ -109,6 +109,17 @@ io.sockets.on('connection', function (socket) {
 	socket.on('put', data => {
 		// update game info
 		
+	});
+	
+	
+	
+	// when the client emits 'newMessage', this listens and executes
+	socket.on('newMessage', (data) => {
+		// we tell the client to execute 'new message'
+		socket.broadcast.emit('newMessage', {
+			username: socket.name,
+			message: data
+		});
 	});
 	
 });

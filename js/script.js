@@ -5,6 +5,8 @@ var socket = io();
 var signUpDiv = document.getElementById("signUpDiv"); 
 var signUpName = document.getElementById("signUpName"); 
 var signUpButton = document.getElementById("signUpButton"); 
+var $signUpName = $('.signUpName');
+
 signUpButton.onclick = function(){
 	socket.emit('signUp', {name:signUpName.value}); 
 };
@@ -193,10 +195,11 @@ var $messages = $('.messages'); // Messages area
 var $inputMessage = $('.inputMessage'); // Input message input box
 var $chatPage = $('.chat.page'); // The chatroom page
 
+var username;
 var connected = false;
 var typing = false;
 var lastTypingTime;
-var $currentInput = $usernameInput.focus();
+var $currentInput = $inputMessage.focus();
 
 const addParticipantsMessage = (data) => {
 	var message = '';
@@ -220,9 +223,14 @@ const sendMessage = () => {
 			username: username,
 			message: message
 		});
-		// tell server to execute 'new message' and send along one parameter
-		socket.emit('new message', message);
+		// tell server to execute 'newMessage' and send along one parameter
+		socket.emit('newMessage', message);
 	}
+}
+
+// prevents input from having injected markup
+const cleanInput = (input) => {
+	return $('<div/>').text(input).html();
 }
 
 // log a message
@@ -231,16 +239,96 @@ const log = (message, options) => {
 	addMessageElement($el, options);
 }
 
+// adds the visual chat message to the message list
+const addChatMessage = (data) => {
+	
+	var $usernameDiv = $('<span class="username"/>')
+		.text(data.username)
+		.css('color', getUsernameColor(data.username));
+	var $messageBodyDiv = $('<span class="messageBody">')
+		.text(data.message);
+
+	var typingClass = data.typing ? 'typing' : '';
+	var $messageDiv = $('<li class="message"/>')
+		.data('username', data.username)
+		.addClass(typingClass)
+		.append($usernameDiv, $messageBodyDiv);
+
+	addMessageElement($messageDiv);
+}
+
+// adds a message element to the messages and scrolls to the bottom
+// el - The element to add as a message
+// options.fade - If the element should fade-in (default = true)
+// options.prepend - If the element should prepend
+// all other messages (default = false)
+const addMessageElement = (el) => {
+	var $el = $(el);
+	$messages.append($el);
+	$messages[0].scrollTop = $messages[0].scrollHeight;
+}
+
+
+var COLORS = [
+	'#e21400', '#91580f', '#f8a700', '#f78b00',
+	'#58dc00', '#287b00', '#a8f07a', '#4ae8c4',
+	'#3b88eb', '#3824aa', '#a700ff', '#d300e7'
+];
+// gets the color of a username through our hash function
+const getUsernameColor = (username) => {
+	// compute hash code
+	var hash = 7;
+	for (var i = 0; i < username.length; i++) {
+		hash = username.charCodeAt(i) + (hash << 5) - hash;
+	}
+	// calculate color
+	var index = Math.abs(hash % COLORS.length);
+	return COLORS[index];
+}
 
 
 
+// keyboard events
+
+$window.keydown(event => {
+// auto-focus the current input when a key is typed
+	if (!(event.ctrlKey || event.metaKey || event.altKey)) {
+		$currentInput.focus();
+	}
+	// when the client hits ENTER on their keyboard
+	if (event.which === 13) {
+		if (username) {
+			sendMessage();
+			typing = false;
+		} else {
+			alert("Please join first!");
+		}
+	}
+});
+
+
+// click events
+
+// focus input when clicking on the message input's border
+$inputMessage.click(() => {
+	$inputMessage.focus();
+	$currentInput = $inputMessage.focus();
+});
+$signUpName.click(() => {
+	$signUpName.focus();
+	$currentInput = $signUpName.focus();
+});
+
+// socket events
 
 // client
 var p = undefined;
 socket.on('signUpResponse', function (data) {
 	if (data.success){
 		signUpDiv.style.display = 'none';
-		p = new Player(data.socket);
+		p = new Player(data.username);
+		username = data.username;
+		connected = true;
 	}
 	else {
 		alert(data.msg);
@@ -248,8 +336,13 @@ socket.on('signUpResponse', function (data) {
 });
 
 socket.on('updateBoard', data => {
-	
 
 
+});
+
+
+
+socket.on('newMessage', (data) => {
+	addChatMessage(data);
 });
 
