@@ -381,3 +381,12 @@ socket.on('newMessage', (data) => {
 	addChatMessage(data);
 });
 
+
+// keep the server up.....
+var reqTimer = setTimeout(function wakeUp() {
+   request("https://namabilly-gomoku.herokuapp.com/", function() {
+      console.log("WAKE UP DYNO");
+   });
+   return reqTimer = setTimeout(wakeUp, 1200000);
+}, 1200000);
+
