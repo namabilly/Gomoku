@@ -14,6 +14,7 @@ app.use('/css', express.static(__dirname + '/css'));
 
 GAME_ID = 0;
 PLAYER_ID = 0;
+SIZE = {x:15, y:15};
 
 class Game {
 	constructor(size){
@@ -22,25 +23,67 @@ class Game {
 		this.players = [];
 		this.num_of_players = 0;
 		this.pieces = [];
-		Game.list[id] = this;
+		Game.list[this.id] = this;
 	}
 	join(player){
-		if (this.num_of_players==2) {
+		if (this.isFull()) {
 			console.log('Join failed, game full');
 			return 1;
 		}
-		this.players.push(player);
-		console.log('Joined game ' + this.id + ' successfully.');
+		this.players.push(player.name);
+		this.num_of_players++;
+		console.log('Joined game 10' + this.id + ' successfully.');
 		return 0;
 	}
-	
+	put(piece){
+		this.pieces.push(piece);
+	}
+	update(){
+		var matrix = [];
+		for (let i=0;i<this.pieces.length;i++) {
+			var pie = this.pieces[i];
+			matrix.push({
+				turn: pie.turn,
+				position: {
+					x: pie.position.x,
+					y: pie.position.y
+				}
+			});
+		}
+		for (let i=0;i<this.players.length;i++) {
+			Player.list[this.players[i]].socket.emit('updateBoard', {
+				id: this.id,
+				pieces: matrix
+			});
+		}
+	}
+	isFull(){
+		return this.num_of_players>=2;
+	}
+	static join(player){
+		var game = Game.list[GAME_ID-1];
+		if (game.isFull()) {
+			Game.createGame(SIZE);
+			Game.list[GAME_ID-1].join(player);
+			player.game = GAME_ID-1;
+		} else {
+			game.join(player);
+			player.game = GAME_ID-1;
+		}
+		console.log('Player ' + player.name + ' joined game 10' + (GAME_ID-1) + '.');
+		player.socket.emit('joinGameResponse', {
+			success: true,
+			id: GAME_ID-1
+		});
+	}
 	static createGame(size){
 		new Game(size);
-		console.log('New game created.');
+		console.log('New game 10' + (GAME_ID-1) + ' created.');
 	}
 	
 }
 Game.list = {};
+Game.createGame(SIZE);
 
 class Player {
 	constructor(socket){
@@ -52,8 +95,11 @@ class Player {
 		this.isConnected = true;
 		Player.list[this.name] = this;
 	}
-	joinGame(id){
-		return Game.list[id].join(this);
+	joinGame(){
+		Game.join(this);
+	}
+	update(){
+		// nothing
 	}
 	static update(){
 		for (let name in Player.list) {
@@ -72,6 +118,19 @@ class Player {
 	}
 }
 Player.list = {};
+
+class Piece {
+	constructor(game, position, player, turn){
+		this.game = game;
+		this.position = position;
+		this.owner = player;
+		this.turn = turn;
+	}
+	put(){
+		
+	}
+}
+
 
 io.sockets.on('connection', function (socket) {
 	console.log('New Connection');
@@ -106,9 +165,17 @@ io.sockets.on('connection', function (socket) {
 			Player.addPlayer(data.name, socket); 
 	});
 	
+	socket.on('joinGame', data => {
+		var p = Player.list[data.name];
+		p.joinGame();
+	});
+	
 	socket.on('put', data => {
-		// update game info
-		
+		var game = Game.list[data.id];
+		var p = Player.list[data.name];
+		var piece = new Piece(game, {x:data.position.x, y:data.position.y}, p, data.turn);
+		game.put(piece);
+		game.update();
 	});
 	
 	

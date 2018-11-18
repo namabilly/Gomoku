@@ -11,7 +11,7 @@ signUpButton.onclick = function(){
 	socket.emit('signUp', {name:signUpName.value}); 
 };
 
- 
+
 // game
 class Board {
 	constructor(position, size, format, color){
@@ -74,6 +74,18 @@ class Board {
 		new Piece(this, position, player, this.turn).show();
 		return 0;
 	}
+	clearBoard(){
+		this.pieces = [];
+		this.turn = 0;
+		this.draw();
+	}
+	load(pieces){
+		turn = pieces.length;
+		for (let i=0;i<pieces.length;i++) {
+			var p0 = (pieces[i].turn%2==0) ? p1 : p2;
+			this.put(pieces[i].position, p0);
+		}
+	}
 	isInBoard(position){
 		if (position.x < this.position.x-this.format.spacing/2||
 			position.y < this.position.y-this.format.spacing/2||
@@ -92,6 +104,16 @@ class Board {
 			x: Math.floor((position.x-this.position.x)/this.format.spacing+1/2),
 			y: Math.floor((position.y-this.position.y)/this.format.spacing+1/2)
 		};
+		if (gid!=-1)
+			socket.emit('put', {
+				id: gid,
+				position: {
+					x: pos.x,
+					y: pos.y
+				},
+				name: username,
+				turn: this.turn
+			});
 		return this.put(pos, player);
 	}
 	onMouseMove(position, player){
@@ -187,6 +209,14 @@ c.onmousemove = function(data, e){
 	board.onMouseMove(getMousePos(c, data), p);
 }
 
+const updateBoard = data => {
+	if (data.id==gid) {
+		board.clearBoard();
+		board.load(data.pieces);
+	}
+};
+
+
 
 // chat
 
@@ -210,7 +240,6 @@ const addParticipantsMessage = (data) => {
 	}
 	log(message);
 }
-
 // sends a chat message
 const sendMessage = () => {
 	var message = $inputMessage.val();
@@ -227,18 +256,15 @@ const sendMessage = () => {
 		socket.emit('newMessage', message);
 	}
 }
-
 // prevents input from having injected markup
 const cleanInput = (input) => {
 	return $('<div/>').text(input).html();
 }
-
 // log a message
 const log = (message, options) => {
 	var $el = $('<li>').addClass('log').text(message);
 	addMessageElement($el, options);
 }
-
 // adds the visual chat message to the message list
 const addChatMessage = (data) => {
 	
@@ -256,7 +282,6 @@ const addChatMessage = (data) => {
 
 	addMessageElement($messageDiv);
 }
-
 // adds a message element to the messages and scrolls to the bottom
 // el - The element to add as a message
 // options.fade - If the element should fade-in (default = true)
@@ -267,7 +292,6 @@ const addMessageElement = (el) => {
 	$messages.append($el);
 	$messages[0].scrollTop = $messages[0].scrollHeight;
 }
-
 
 var COLORS = [
 	'#e21400', '#91580f', '#f8a700', '#f78b00',
@@ -323,24 +347,35 @@ $signUpName.click(() => {
 
 // client
 var p = undefined;
-socket.on('signUpResponse', function (data) {
+var gid = -1;
+socket.on('signUpResponse', (data) => {
 	if (data.success){
 		signUpDiv.style.display = 'none';
 		p = new Player(data.username);
 		username = data.username;
 		connected = true;
+		socket.emit('joinGame', {
+			name: username
+		});
 	}
 	else {
 		alert(data.msg);
 	}
 });
 
-socket.on('updateBoard', data => {
-
-
+socket.on('joinGameResponse', (data) => {
+	if (data.success){
+		gid = data.id;
+		board.clearBoard();
+	}
+	else {
+		alert(data.msg);
+	}
 });
 
-
+socket.on('updateBoard', (data) => {
+	updateBoard(data);
+});
 
 socket.on('newMessage', (data) => {
 	addChatMessage(data);
