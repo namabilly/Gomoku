@@ -60,6 +60,13 @@ class Game {
 	isFull(){
 		return this.num_of_players>=2;
 	}
+	removePlayer(name){
+		this.players.pop(name);
+		this.num_of_players--;
+		if (this.num_of_players==0) {
+			Game.endGame(this.id);
+		}
+	}
 	static join(player){
 		var game = Game.list[GAME_ID-1];
 		if (game.isFull()) {
@@ -79,6 +86,10 @@ class Game {
 	static createGame(size){
 		new Game(size);
 		console.log('New game 10' + (GAME_ID-1) + ' created.');
+	}
+	static endGame(id){
+		delete Game.list[id];
+		console.log('Game 10' + id + ' ended.')
 	}
 	
 }
@@ -113,6 +124,8 @@ class Player {
 		socket.emit('signUpResponse', {success:true, username:name});
 	}
 	static removePlayer(name){
+		var game = Game.list[Player.list[name].game];
+		game.removePlayer(name);
 		delete Player.list[name];
 		console.log('Player ' + name + ' left.');
 	}
@@ -145,8 +158,9 @@ io.sockets.on('connection', function (socket) {
 				}
 			}, 3000);
 		}
-		else
+		else {
 			console.log('One disconnection');
+		}
 	});
 	
 	socket.on('signUp', data => {
