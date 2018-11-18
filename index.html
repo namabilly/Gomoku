@@ -23,21 +23,21 @@
 	
 	<br>
 	
-	<div class="row">
-		<div class="col-md col-xs">
+	<div class="row justify-content-center">
+		<div class="col-xs">
 			<div id="gameDiv">
 				<canvas id="game">Your browser does not support canvas.</canvas>
 			</div>
 		</div>
 		
-		<div>
+		<div class="col-xs">
 			<button class="arrow-down btn btn-primary" onclick="this.classList.toggle('active');" 
-			data-toggle="collapse" data-target="#page" aria-expanded="false" aria-controls="page"></button>
+			data-toggle="collapse" data-target="#page" aria-expanded="true" aria-controls="page"></button>
 		</div>
-			
-		<div class="col col-xs">
-			<div class="page collapse" id="page">
-				<ul class="card card-body">
+		
+		<div class="col col-xs collapse" id="page" style="padding:0;height:100%;">
+			<div>
+				<ul class="pages card card-body">
 					<li class="chat page">
 						<div class="chatArea">
 							<ul class="messages"></ul>
@@ -47,6 +47,8 @@
 				</ul>
 			</div>
 		</div>
+		
+			
 	</div>
 	</div>
 	

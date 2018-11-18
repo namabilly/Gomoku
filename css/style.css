@@ -1,14 +1,29 @@
+
 ul {
 	list-style: none;
 	word-wrap: break-word;
+	padding: 0;
 }
 
 .chat.page {
-	
+	height: 807.14px;
+	width: 100%;
+	min-height: 800px;
+	min-width: 100px;
+}
+
+/* Pages */
+
+.pages {
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	width: 100%;
 }
 
 .page {
-	
+	height: 100%;
+	width: 100%;
 }
 
 /* Font */
