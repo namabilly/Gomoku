@@ -75,10 +75,11 @@ class Board {
 	}
 	clearBoard(){
 		this.pieces = [];
-		this.turn = 0;
 		this.draw();
 	}
 	load(pieces){
+		lock = (pieces.length-this.turn)%2==0 && lock;
+		console.log(lock);
 		this.turn = pieces.length;
 		for (let i=0;i<pieces.length;i++) {
 			var p0 = (pieces[i].turn%2==0) ? p1 : p2;
@@ -115,6 +116,7 @@ class Board {
 					name: username,
 					turn: this.turn
 				});
+				lock = !lock;
 			}
 			this.turn++;
 		}
@@ -189,6 +191,8 @@ var p2 = new Player("#FFFFFF");
 //board.put({x:7, y:8}, p2);
 ctx.strokeStyle = "#000000";
 
+var lock = false;
+
 const getMousePos = function (canvas, evt) {
     var rect = canvas.getBoundingClientRect();
     return {
@@ -199,13 +203,20 @@ const getMousePos = function (canvas, evt) {
 
 c.onclick = function(data, e){
 	var p = board.turn%2==0 ? p1 : p2;
-	board.onClick({x:data.offsetX, y:data.offsetY}, p);	
+	if (!lock)
+		board.onClick({x:data.offsetX, y:data.offsetY}, p);	
 }
 
 c.onmousemove = function(data, e){
-	board.draw();
-	var p = board.turn%2==0 ? p1 : p2;
-	board.onMouseMove(getMousePos(c, data), p);
+	if (lock) {
+		$('#game').addClass('not-allowed');
+	}
+	else {
+		$('#game').removeClass('not-allowed');
+		board.draw();
+		var p = board.turn%2==0 ? p1 : p2;
+		board.onMouseMove(getMousePos(c, data), p);
+	}
 }
 
 const updateBoard = data => {

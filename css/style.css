@@ -21,6 +21,10 @@ ul {
 	min-width: 100px;
 }
 
+.not-allowed {
+	cursor: not-allowed;
+}
+
 /* Pages */
 
 .pages {
