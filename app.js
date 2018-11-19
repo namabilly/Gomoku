@@ -24,6 +24,7 @@ class Game {
 		this.num_of_players = 0;
 		this.pieces = [];
 		Game.list[this.id] = this;
+		this.status = 0;
 	}
 	join(player){
 		if (this.isFull()) {
@@ -39,6 +40,8 @@ class Game {
 		this.pieces.push(piece);
 	}
 	update(){
+		this.status = this.checkBoard();
+		console.log(this.isEnded);
 		var matrix = [];
 		for (let i=0;i<this.pieces.length;i++) {
 			var pie = this.pieces[i];
@@ -53,7 +56,8 @@ class Game {
 		for (let i in this.players) {
 			Player.list[this.players[i]].socket.emit('updateBoard', {
 				id: this.id,
-				pieces: matrix
+				pieces: matrix,
+				status: this.status
 			});
 		}
 	}
@@ -67,8 +71,65 @@ class Game {
 			Game.endGame(this.id);
 		}
 	}
+	checkBoard(){
+		var matrix = [];
+		for (let x=0;x<SIZE.x;x++) {
+			for (let y=0;y<SIZE.y;y++) {
+				matrix[x*SIZE.x + y] = 0;
+			}
+		}
+		for (let i=0;i<this.pieces.length;i++) {
+			var pie = this.pieces[i];
+			matrix[pie.position.x*SIZE.x + pie.position.y] = (pie.turn%2) * 2 - 1;
+		}
+		for (let x=0;x<SIZE.x;x++) {
+			var temp = 0;
+			for (let y=0;y<SIZE.y;y++) {
+				temp += matrix[x*SIZE.x + y];
+				if (temp*matrix <= 0)
+					temp = 0;
+				if (temp <= -5) return -1;
+				if (temp >= 5) return 1;
+			}
+		}
+		for (let y=0;y<SIZE.y;y++) {
+			var temp = 0;
+			for (let x=0;x<SIZE.x;x++) {
+				temp += matrix[x*SIZE.x + y];
+				if (temp*matrix <= 0)
+					temp = 0;
+				if (temp <= -5) return -1;
+				if (temp >= 5) return 1;
+			}
+		}
+		for (let x=0;x<SIZE.x*2-1;x++) {
+			var temp = 0;
+			for (let c=0;c<SIZE.x-Math.abs(x-SIZE.x);c++) {			
+				temp += matrix[c*SIZE.x + x-c];
+				if (temp*matrix <= 0)
+					temp = 0;
+				if (temp <= -5) return -1;
+				if (temp >= 5) return 1;
+			}
+		}
+		for (let x=0;x<SIZE.x*2-1;x++) {
+			var temp = 0;
+			for (let c=0;c<SIZE.x-Math.abs(x-SIZE.x);c++) {			
+				temp += matrix[c*SIZE.x + SIZE.x-1-x+c];
+				if (temp*matrix <= 0)
+					temp = 0;
+				if (temp <= -5) return -1;
+				if (temp >= 5) return 1;
+			}
+		}
+		return 0;
+	}
 	static join(player){
 		var game = Game.list[GAME_ID-1];
+		if (!game) {
+			Game.createGame(SIZE);
+			game = Game.list[GAME_ID-1];
+		}
 		if (game.isFull()) {
 			Game.createGame(SIZE);
 			Game.list[GAME_ID-1].join(player);

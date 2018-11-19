@@ -223,6 +223,10 @@ const updateBoard = data => {
 	if (data.id==gid) {
 		board.clearBoard();
 		board.load(data.pieces);
+		if (data.status != 0) {
+			var winner = (data.status==-1)? 'black' : 'white';
+			alert(winner + ' has won.');
+		}
 	}
 };
 
