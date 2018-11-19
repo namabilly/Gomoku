@@ -58,7 +58,6 @@ class Board {
 				return 2;
 			}
 		}
-		this.turn++;
 		var piece = new Piece(this, position, player, this.turn);
 		this.pieces.push(piece);
 		piece.draw();
@@ -80,7 +79,7 @@ class Board {
 		this.draw();
 	}
 	load(pieces){
-		turn = pieces.length;
+		this.turn = pieces.length;
 		for (let i=0;i<pieces.length;i++) {
 			var p0 = (pieces[i].turn%2==0) ? p1 : p2;
 			this.put(pieces[i].position, p0);
@@ -104,17 +103,22 @@ class Board {
 			x: Math.floor((position.x-this.position.x)/this.format.spacing+1/2),
 			y: Math.floor((position.y-this.position.y)/this.format.spacing+1/2)
 		};
-		if (gid!=-1)
-			socket.emit('put', {
-				id: gid,
-				position: {
-					x: pos.x,
-					y: pos.y
-				},
-				name: username,
-				turn: this.turn
-			});
-		return this.put(pos, player);
+		var res = this.put(pos, player);
+		if (res==0) {
+			if (gid!=-1) {
+				socket.emit('put', {
+					id: gid,
+					position: {
+						x: pos.x,
+						y: pos.y
+					},
+					name: username,
+					turn: this.turn
+				});
+			}
+			this.turn++;
+		}
+		return res;
 	}
 	onMouseMove(position, player){
 		if (!this.isInBoard(position)){
@@ -183,12 +187,9 @@ var p1 = new Player("#000000");
 var p2 = new Player("#FFFFFF");
 //board.put({x:7, y:7}, p1);
 //board.put({x:7, y:8}, p2);
-
 ctx.strokeStyle = "#000000";
 
-var turn = 0;
-
-function getMousePos(canvas, evt) {
+const getMousePos = function (canvas, evt) {
     var rect = canvas.getBoundingClientRect();
     return {
       x: evt.clientX - rect.left,
@@ -197,15 +198,13 @@ function getMousePos(canvas, evt) {
 }
 
 c.onclick = function(data, e){
-	var p = turn%2==0 ? p1 : p2;
-	if(board.onClick({x:data.offsetX, y:data.offsetY}, p)==0)
-		turn++;
-	
+	var p = board.turn%2==0 ? p1 : p2;
+	board.onClick({x:data.offsetX, y:data.offsetY}, p);	
 }
 
 c.onmousemove = function(data, e){
 	board.draw();
-	var p = turn%2==0 ? p1 : p2;
+	var p = board.turn%2==0 ? p1 : p2;
 	board.onMouseMove(getMousePos(c, data), p);
 }
 
@@ -261,9 +260,9 @@ const cleanInput = (input) => {
 	return $('<div/>').text(input).html();
 }
 // log a message
-const log = (message, options) => {
+const log = (message) => {
 	var $el = $('<li>').addClass('log').text(message);
-	addMessageElement($el, options);
+	addMessageElement($el);
 }
 // adds the visual chat message to the message list
 const addChatMessage = (data) => {
@@ -357,6 +356,7 @@ socket.on('signUpResponse', (data) => {
 		socket.emit('joinGame', {
 			name: username
 		});
+		log('Welcome to Gomoku');
 	}
 	else {
 		alert(data.msg);
@@ -373,6 +373,22 @@ socket.on('joinGameResponse', (data) => {
 	}
 });
 
+socket.on('playerJoined', (data) => {
+	log(data.username + ' joined.');
+});
+
+socket.on('playerDisconnected', (data) => {
+	log(data.username + ' disconnected.');
+});
+
+socket.on('playerLeft', (data) => {
+	log(data.username + ' left.');
+});
+
+socket.on('playerReconnected', (data) => {
+	log(data.username + ' reconnected.');
+});
+
 socket.on('updateBoard', (data) => {
 	updateBoard(data);
 });
@@ -382,11 +398,4 @@ socket.on('newMessage', (data) => {
 });
 
 
-// keep the server up.....
-var reqTimer = setTimeout(function wakeUp() {
-   request("https://namabilly-gomoku.herokuapp.com/", function() {
-      console.log("WAKE UP DYNO");
-   });
-   return reqTimer = setTimeout(wakeUp, 1200000);
-}, 1200000);
 

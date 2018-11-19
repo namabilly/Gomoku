@@ -82,6 +82,7 @@ class Game {
 			success: true,
 			id: GAME_ID-1
 		});
+		game.update();
 	}
 	static createGame(size){
 		new Game(size);
@@ -126,6 +127,9 @@ class Player {
 	static removePlayer(name){
 		var game = Game.list[Player.list[name].game];
 		game.removePlayer(name);
+		Player.list[name].socket.broadcast.emit('playerLeft', {
+			username: name
+		});
 		delete Player.list[name];
 		console.log('Player ' + name + ' left.');
 	}
@@ -151,6 +155,9 @@ io.sockets.on('connection', function (socket) {
 	socket.on('disconnect', () => {
 		if (Player.list[socket.name]){
 			console.log('Player ' + socket.name + ' disconnected.');
+			socket.broadcast.emit('playerDisconnected', {
+				username: socket.name
+			});
 			Player.list[socket.name].isConnected = false;
 			setTimeout(function(){
 				if(!Player.list[socket.name].isConnected){
@@ -164,19 +171,29 @@ io.sockets.on('connection', function (socket) {
 	});
 	
 	socket.on('signUp', data => {
-		if (data.name in Player.list)
+		data.name = data.name.trim();
+		if (!data.name || data.name.length == 0)
+			socket.emit('signUpResponse', {success:false, msg:'name invalid, empty name is not accepted.'}); 
+		else if (data.name in Player.list)
 			// reconnect
 			if (!Player.list[data.name].isConnected){
 				Player.list[data.name].isConnected = true;
 				Object.defineProperty(socket, 'name', {value:data.name});
 				Player.list[data.name].socket = socket;
+				socket.broadcast.emit('playerReconnected', {
+					username: data.name
+				});
 				console.log('Player ' + data.name + ' reconnected.');
 				socket.emit('signUpResponse', {success:true, username:data.name});
 			}
 			else
 				socket.emit('signUpResponse', {success:false, msg:'name exists, please try another one.'}); 
-		else 
+		else {
 			Player.addPlayer(data.name, socket); 
+			socket.broadcast.emit('playerJoined', {
+				username: data.name
+			});
+		}
 	});
 	
 	socket.on('joinGame', data => {
@@ -192,8 +209,6 @@ io.sockets.on('connection', function (socket) {
 		game.update();
 	});
 	
-	
-	
 	// when the client emits 'newMessage', this listens and executes
 	socket.on('newMessage', (data) => {
 		// we tell the client to execute 'new message'
@@ -204,4 +219,15 @@ io.sockets.on('connection', function (socket) {
 	});
 	
 });
+
+
+
+// keep the server up.....
+var reqTimer = setTimeout(function wakeUp() {
+   request("https://namabilly-gomoku.herokuapp.com/", function() {
+      console.log("WAKE UP DYNO");
+   });
+   return reqTimer = setTimeout(wakeUp, 1200000);
+}, 1200000);
+
 
