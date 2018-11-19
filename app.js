@@ -50,7 +50,7 @@ class Game {
 				}
 			});
 		}
-		for (let i=0;i<this.players.length;i++) {
+		for (let i in this.players) {
 			Player.list[this.players[i]].socket.emit('updateBoard', {
 				id: this.id,
 				pieces: matrix
