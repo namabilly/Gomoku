@@ -41,7 +41,6 @@ class Game {
 	}
 	update(){
 		this.status = this.checkBoard();
-		console.log(this.isEnded);
 		var matrix = [];
 		for (let i=0;i<this.pieces.length;i++) {
 			var pie = this.pieces[i];
@@ -86,8 +85,8 @@ class Game {
 			var temp = 0;
 			for (let y=0;y<SIZE.y;y++) {
 				temp += matrix[x*SIZE.x + y];
-				if (temp*matrix <= 0)
-					temp = 0;
+				if (temp*matrix[x*SIZE.x + y] <= 0)
+					temp = matrix[x*SIZE.x + y];
 				if (temp <= -5) return -1;
 				if (temp >= 5) return 1;
 			}
@@ -96,8 +95,8 @@ class Game {
 			var temp = 0;
 			for (let x=0;x<SIZE.x;x++) {
 				temp += matrix[x*SIZE.x + y];
-				if (temp*matrix <= 0)
-					temp = 0;
+				if (temp*matrix[x*SIZE.x + y] <= 0)
+					temp = matrix[x*SIZE.x + y];
 				if (temp <= -5) return -1;
 				if (temp >= 5) return 1;
 			}
@@ -106,8 +105,8 @@ class Game {
 			var temp = 0;
 			for (let c=0;c<SIZE.x-Math.abs(x-SIZE.x);c++) {			
 				temp += matrix[c*SIZE.x + x-c];
-				if (temp*matrix <= 0)
-					temp = 0;
+				if (temp*matrix[c*SIZE.x + x-c] <= 0)
+					temp = matrix[c*SIZE.x + x-c];
 				if (temp <= -5) return -1;
 				if (temp >= 5) return 1;
 			}
@@ -116,8 +115,8 @@ class Game {
 			var temp = 0;
 			for (let c=0;c<SIZE.x-Math.abs(x-SIZE.x);c++) {			
 				temp += matrix[c*SIZE.x + SIZE.x-1-x+c];
-				if (temp*matrix <= 0)
-					temp = 0;
+				if (temp*matrix[c*SIZE.x + SIZE.x-1-x+c] <= 0)
+					temp = matrix[c*SIZE.x + SIZE.x-1-x+c];
 				if (temp <= -5) return -1;
 				if (temp >= 5) return 1;
 			}
