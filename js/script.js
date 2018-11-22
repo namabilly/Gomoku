@@ -47,18 +47,21 @@ class Board {
 			}
 		}
 		for(var i=0;i<this.pieces.length;i++){
-			this.pieces[i].draw();
+			if (this.pieces[i].turn==this.turn-1)
+				this.pieces[i].showLatest();
+			else
+				this.pieces[i].draw();
 		}
 		ctx.setTransform(1, 0, 0, 1, 0, 0);
 	}
-	put(position, player){
+	put(position, player, turn){
 		for(var i=0;i<this.pieces.length;i++){
 			if(position.x==this.pieces[i].position.x&&position.y==this.pieces[i].position.y){
 				console.log("Already exists");
 				return 2;
 			}
 		}
-		var piece = new Piece(this, position, player, this.turn);
+		var piece = new Piece(this, position, player, turn);
 		this.pieces.push(piece);
 		piece.draw();
 		return 0;
@@ -83,7 +86,7 @@ class Board {
 		this.turn = pieces.length;
 		for (let i=0;i<pieces.length;i++) {
 			var p0 = (pieces[i].turn%2==0) ? p1 : p2;
-			this.put(pieces[i].position, p0);
+			this.put(pieces[i].position, p0, i);
 		}
 	}
 	isInBoard(position){
@@ -104,7 +107,7 @@ class Board {
 			x: Math.floor((position.x-this.position.x)/this.format.spacing+1/2),
 			y: Math.floor((position.y-this.position.y)/this.format.spacing+1/2)
 		};
-		var res = this.put(pos, player);
+		var res = this.put(pos, player, this.turn);
 		if (res==0) {
 			if (gid!=-1) {
 				socket.emit('put', {
@@ -169,6 +172,26 @@ class Piece {
 		ctx.globalAlpha = 1;
 		ctx.setTransform(1, 0, 0, 1, 0, 0);
 	}
+	showLatest(){
+		ctx.setTransform(1, 0, 0, 1, this.board.position.x, this.board.position.y);
+		ctx.fillStyle = this.owner.color=='#FFFFFF'? this.owner.color : '#333333';
+		ctx.beginPath();
+		ctx.arc(this.position.x*this.board.format.spacing-this.board.format.lineWidth/2, 
+			this.position.y*this.board.format.spacing-this.board.format.lineWidth/2, 
+			this.board.format.spacing/2-this.board.format.lineWidth, 0, 2*Math.PI);
+		ctx.fill();
+		ctx.setTransform(1, 0, 0, 1, 0, 0);
+		ctx.setTransform(1, 0, 0, 1, this.board.position.x, this.board.position.y);
+		ctx.fillStyle = '#2222BB';
+		ctx.globalAlpha = 0.2;
+		ctx.beginPath();
+		ctx.arc(this.position.x*this.board.format.spacing-this.board.format.lineWidth/2, 
+			this.position.y*this.board.format.spacing-this.board.format.lineWidth/2, 
+			this.board.format.spacing/2-this.board.format.lineWidth, 0, 2*Math.PI);
+		ctx.fill();
+		ctx.globalAlpha = 1;
+		ctx.setTransform(1, 0, 0, 1, 0, 0);
+	}
 }
 
 
@@ -190,7 +213,6 @@ var p2 = new Player("#FFFFFF");
 //board.put({x:7, y:7}, p1);
 //board.put({x:7, y:8}, p2);
 ctx.strokeStyle = "#000000";
-
 var lock = false;
 
 const getMousePos = function (canvas, evt) {
@@ -210,6 +232,7 @@ c.onclick = function(data, e){
 c.onmousemove = function(data, e){
 	if (lock) {
 		$('#game').addClass('not-allowed');
+		board.draw();
 	}
 	else {
 		$('#game').removeClass('not-allowed');

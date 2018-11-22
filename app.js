@@ -164,6 +164,8 @@ class Player {
 		this.id = PLAYER_ID++;
 		this.game = undefined;
 		this.color = undefined;
+		this.opponent = undefined;
+		this.lock = false;
 		this.isConnected = true;
 		Player.list[this.name] = this;
 	}
