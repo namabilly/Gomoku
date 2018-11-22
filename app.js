@@ -101,9 +101,9 @@ class Game {
 				if (temp >= 5) return 1;
 			}
 		}
-		for (let x=0;x<SIZE.x*2-1;x++) {
+		for (let x=0;x<SIZE.x;x++) {
 			var temp = 0;
-			for (let c=0;c<SIZE.x-Math.abs(x-SIZE.x);c++) {			
+			for (let c=0;c<x;c++) {	
 				temp += matrix[c*SIZE.x + x-c];
 				if (temp*matrix[c*SIZE.x + x-c] <= 0)
 					temp = matrix[c*SIZE.x + x-c];
@@ -111,12 +111,32 @@ class Game {
 				if (temp >= 5) return 1;
 			}
 		}
-		for (let x=0;x<SIZE.x*2-1;x++) {
+		for (let x=SIZE.x;x<SIZE.x*2-1;x++) {
 			var temp = 0;
-			for (let c=0;c<SIZE.x-Math.abs(x-SIZE.x);c++) {			
+			for (let c=x-SIZE.x+1;c<SIZE.x-1-(x-SIZE.x+1);c++) {	
+				temp += matrix[c*SIZE.x + x-c];
+				if (temp*matrix[c*SIZE.x + x-c] <= 0)
+					temp = matrix[c*SIZE.x + x-c];
+				if (temp <= -5) return -1;
+				if (temp >= 5) return 1;
+			}
+		}
+		for (let x=0;x<SIZE.x;x++) {
+			var temp = 0;
+			for (let c=0;c<x;c++) {	
 				temp += matrix[c*SIZE.x + SIZE.x-1-x+c];
 				if (temp*matrix[c*SIZE.x + SIZE.x-1-x+c] <= 0)
 					temp = matrix[c*SIZE.x + SIZE.x-1-x+c];
+				if (temp <= -5) return -1;
+				if (temp >= 5) return 1;
+			}
+		}
+		for (let x=0;x<SIZE.x-1;x++) {
+			var temp = 0;
+			for (let c=0;c<x;c++) {	
+				temp += matrix[c + (SIZE.x-1-x+c)*SIZE.x];
+				if (temp*matrix[c + (SIZE.x-1-x+c)*SIZE.x] <= 0)
+					temp = matrix[c + (SIZE.x-1-x+c)*SIZE.x];
 				if (temp <= -5) return -1;
 				if (temp >= 5) return 1;
 			}
