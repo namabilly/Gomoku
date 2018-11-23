@@ -113,7 +113,7 @@ class Game {
 		}
 		for (let x=SIZE.x;x<SIZE.x*2-1;x++) {
 			var temp = 0;
-			for (let c=x-SIZE.x+1;c<SIZE.x-1-(x-SIZE.x+1);c++) {	
+			for (let c=x-SIZE.x+1;c<SIZE.x;c++) {	
 				temp += matrix[c*SIZE.x + x-c];
 				if (temp*matrix[c*SIZE.x + x-c] <= 0)
 					temp = matrix[c*SIZE.x + x-c];
