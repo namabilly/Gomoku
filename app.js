@@ -56,7 +56,8 @@ class Game {
 			Player.list[this.players[i]].socket.emit('updateBoard', {
 				id: this.id,
 				pieces: matrix,
-				status: this.status
+				status: this.status,
+				players: this.players
 			});
 		}
 	}
@@ -306,7 +307,7 @@ io.sockets.on('connection', function (socket) {
 
 // keep the server up.....
 var reqTimer = setTimeout(function wakeUp() {
-   request("https://namabilly-gomoku.herokuapp.com/", function() {
+   require('http').request("http://namabilly-gomoku.herokuapp.com/", function() {
       console.log("WAKE UP DYNO");
    });
    return reqTimer = setTimeout(wakeUp, 1200000);

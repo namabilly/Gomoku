@@ -1,4 +1,9 @@
 
+html, body {
+	height: 100%;
+	font-family: Helvetica, Arial;
+}
+
 .container {
 	margin: 0;
 	width: 100%;
@@ -23,6 +28,30 @@ ul {
 
 .not-allowed {
 	cursor: not-allowed;
+}
+
+.uiDiv {
+	position: relative;
+	height: 100%;
+	width: 100%;
+	min-height: 700px;
+	min-width: 100px;
+	text-align: center;
+}
+
+.info {
+	top: 50%;
+	left: 50%;
+	height: 47.5%;
+	width: auto;
+	max-height: 100%;
+	max-width: 100%;
+	margin: auto;
+	text-align: center;
+}
+
+.break {
+	
 }
 
 /* Pages */

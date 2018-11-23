@@ -11,7 +11,7 @@
 </head>
 <body>
 
-	<div class="container">
+<div class="container">
 	<div class="row">
 		<div class="col-sm">
 			<div id="signUpDiv" style="text-align:center;">
@@ -25,19 +25,27 @@
 	
 	<div class="row justify-content-center">
 		<div class="col-xs">
-			
+			<div class="uiDiv" id="uiDiv">
+				<div class="info" id="myInfo">
+					<p id="myName"></p>
+				</div>
+				
+				<hr class="break">
+				
+				<div class="info" id="oppoInfo">
+					<p id="oppoName"></p>
+				</div>
+			</div>
 		</div>
 		<div class="col-xs">
 			<div id="gameDiv">
 				<canvas id="game">Your browser does not support canvas.</canvas>
 			</div>
 		</div>
-		
 		<div class="col-xs">
 			<button class="arrow-down btn btn-primary" onclick="this.classList.toggle('active');" 
 			data-toggle="collapse" data-target="#page" aria-expanded="true" aria-controls="page"></button>
 		</div>
-		
 		<div class="col col-xs collapse" id="page" style="padding:0;height:100%;">
 			<div>
 				<ul class="pages card card-body">
@@ -50,10 +58,9 @@
 				</ul>
 			</div>
 		</div>
-		
 			
 	</div>
-	</div>
+</div>
 	
 </body>
 	<script type="text/javascript" src="js/socket.io-1.4.5.js"></script>

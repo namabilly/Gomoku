@@ -250,10 +250,26 @@ const updateBoard = data => {
 			var winner = (data.status==-1)? 'black' : 'white';
 			alert(winner + ' has won.');
 		}
+		if (data.players.length > 1) {
+			for (let i in data.players) {
+				if (data.players[i]!=username) {
+					opponent = data.players[i];
+					oppoName.innerHTML = opponent;
+				}
+			}
+		}
 	}
 };
 
 
+// game ui
+var uiDiv = document.getElementById("uiDiv");
+var myInfo = document.getElementById("myInfo");
+var myName = document.getElementById("myName");
+var oppoInfo = document.getElementById("oppoInfo");
+var oppoName = document.getElementById("oppoName");
+
+var opponent;
 
 // chat
 
@@ -403,6 +419,7 @@ socket.on('signUpResponse', (data) => {
 
 socket.on('joinGameResponse', (data) => {
 	if (data.success){
+		myName.innerHTML = username;
 		gid = data.id;
 		board.clearBoard();
 	}
