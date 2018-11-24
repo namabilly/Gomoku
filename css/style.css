@@ -30,6 +30,9 @@ ul {
 	cursor: not-allowed;
 }
 
+
+/* UI */
+
 .uiDiv {
 	position: relative;
 	height: 100%;
@@ -42,7 +45,7 @@ ul {
 .info {
 	top: 50%;
 	left: 50%;
-	height: 47.5%;
+	height: 45%;
 	width: auto;
 	max-height: 100%;
 	max-width: 100%;
@@ -52,6 +55,40 @@ ul {
 
 .break {
 	
+}
+
+.undo {
+	background-image: url('/img/undo.png');
+	background-size: 30px 30px;
+	background-repeat: no-repeat;
+	background-position: center;
+	background-color: Transparent;
+	cursor: pointer;
+	overflow: hidden;
+	outline: none;
+	height: 30px;
+	width: 40px;
+}
+
+.undo:active {
+	background-image: url('/img/undo.png');
+}
+
+.concede {
+	background-image: url('/img/concede.png');
+	background-size: 30px 30px;
+	background-repeat: no-repeat;
+	background-position: center;
+	background-color: Transparent;
+	cursor: pointer;
+	overflow: hidden;
+	outline: none;
+	height: 30px;
+	width: 40px;
+}
+
+.concede:active {
+	background-image: url('/img/concede.png');
 }
 
 /* Pages */

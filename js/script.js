@@ -261,8 +261,21 @@ var myInfo = document.getElementById("myInfo");
 var myName = document.getElementById("myName");
 var oppoInfo = document.getElementById("oppoInfo");
 var oppoName = document.getElementById("oppoName");
+var undo = document.getElementById("undo");
+var concede = document.getElementById("concede");
 
 var opponent;
+
+undo.onclick = function(data, e){
+	var turn = board.turn;
+	turn -= (lock) ? 0 : 1;
+	socket.emit('undo', {
+		id: gid,
+		name: username,
+		turn: turn
+	})
+}
+
 
 // chat
 

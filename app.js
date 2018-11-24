@@ -11,6 +11,7 @@ app.get('/', function (req, res) {
 });
 app.use('/js', express.static(__dirname + '/js'));
 app.use('/css', express.static(__dirname + '/css'));
+app.use('/img', express.static(__dirname + '/img'));
 
 GAME_ID = 0;
 PLAYER_ID = 0;
@@ -39,10 +40,17 @@ class Game {
 	put(piece){
 		this.pieces.push(piece);
 	}
+	undo(turn){
+		for (let i in this.pieces) {
+			if (this.pieces[i].turn >= turn-1) {
+				delete this.pieces[i];
+			}
+		}
+	}
 	update(){
 		this.status = this.checkBoard();
 		var matrix = [];
-		for (let i=0;i<this.pieces.length;i++) {
+		for (let i in this.pieces) {
 			var pie = this.pieces[i];
 			matrix.push({
 				turn: pie.turn,
@@ -78,7 +86,7 @@ class Game {
 				matrix[x*SIZE.x + y] = 0;
 			}
 		}
-		for (let i=0;i<this.pieces.length;i++) {
+		for (let i in this.pieces) {
 			var pie = this.pieces[i];
 			matrix[pie.position.x*SIZE.x + pie.position.y] = (pie.turn%2) * 2 - 1;
 		}
@@ -289,6 +297,14 @@ io.sockets.on('connection', function (socket) {
 		var p = Player.list[data.name];
 		var piece = new Piece(game, {x:data.position.x, y:data.position.y}, p, data.turn);
 		game.put(piece);
+		game.update();
+	});
+	
+	socket.on('undo', data => {
+		var game = Game.list[data.id];
+		var p = Player.list[data.name];
+		var turn = data.turn;
+		game.undo(turn);
 		game.update();
 	});
 	
