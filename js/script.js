@@ -47,10 +47,9 @@ class Board {
 			}
 		}
 		for(var i=0;i<this.pieces.length;i++){
+			this.pieces[i].draw();
 			if (this.pieces[i].turn==this.turn-1)
 				this.pieces[i].showLatest();
-			else
-				this.pieces[i].draw();
 		}
 		ctx.setTransform(1, 0, 0, 1, 0, 0);
 	}
@@ -88,6 +87,7 @@ class Board {
 			var p0 = (pieces[i].turn%2==0) ? p1 : p2;
 			this.put(pieces[i].position, p0, i);
 		}
+		this.draw();
 	}
 	isInBoard(position){
 		if (position.x < this.position.x-this.format.spacing/2||
@@ -174,22 +174,14 @@ class Piece {
 	}
 	showLatest(){
 		ctx.setTransform(1, 0, 0, 1, this.board.position.x, this.board.position.y);
-		ctx.fillStyle = this.owner.color=='#FFFFFF'? this.owner.color : '#333333';
+		ctx.strokeStyle = '#2222BB';
+		ctx.lineWidth = 2;
 		ctx.beginPath();
 		ctx.arc(this.position.x*this.board.format.spacing-this.board.format.lineWidth/2, 
 			this.position.y*this.board.format.spacing-this.board.format.lineWidth/2, 
 			this.board.format.spacing/2-this.board.format.lineWidth, 0, 2*Math.PI);
-		ctx.fill();
-		ctx.setTransform(1, 0, 0, 1, 0, 0);
-		ctx.setTransform(1, 0, 0, 1, this.board.position.x, this.board.position.y);
-		ctx.fillStyle = '#2222BB';
-		ctx.globalAlpha = 0.2;
-		ctx.beginPath();
-		ctx.arc(this.position.x*this.board.format.spacing-this.board.format.lineWidth/2, 
-			this.position.y*this.board.format.spacing-this.board.format.lineWidth/2, 
-			this.board.format.spacing/2-this.board.format.lineWidth, 0, 2*Math.PI);
-		ctx.fill();
-		ctx.globalAlpha = 1;
+		ctx.stroke();
+		ctx.lineWidth = 1;
 		ctx.setTransform(1, 0, 0, 1, 0, 0);
 	}
 }
@@ -227,6 +219,7 @@ c.onclick = function(data, e){
 	var p = board.turn%2==0 ? p1 : p2;
 	if (!lock)
 		board.onClick({x:data.offsetX, y:data.offsetY}, p);	
+	this.draw();
 }
 
 c.onmousemove = function(data, e){
