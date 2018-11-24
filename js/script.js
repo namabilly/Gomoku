@@ -219,7 +219,7 @@ c.onclick = function(data, e){
 	var p = board.turn%2==0 ? p1 : p2;
 	if (!lock)
 		board.onClick({x:data.offsetX, y:data.offsetY}, p);	
-	this.draw();
+	board.draw();
 }
 
 c.onmousemove = function(data, e){
@@ -263,18 +263,33 @@ var oppoInfo = document.getElementById("oppoInfo");
 var oppoName = document.getElementById("oppoName");
 var undo = document.getElementById("undo");
 var concede = document.getElementById("concede");
+var undoremain = document.getElementById("undoremain");
+var UNDO_LIMIT = 3;
+var undo_remain = UNDO_LIMIT;
 
 var opponent;
 
 undo.onclick = function(data, e){
-	var turn = board.turn;
-	turn -= (lock) ? 0 : 1;
-	socket.emit('undo', {
-		id: gid,
-		name: username,
-		turn: turn
-	})
+	if (undo_remain > 0) {
+		undo_remain--;
+		undoremain.innerHTML = undo_remain;
+		var turn = board.turn;
+		turn -= (lock) ? 0 : 1;
+		socket.emit('undo', {
+			id: gid,
+			name: username,
+			turn: turn
+		})
+	}
+	if (undo_remain == 0) {
+		undoremain.style.backgroundColor = "#DDDDDD";
+	}
 }
+
+
+
+// dialog
+
 
 
 // chat
@@ -427,6 +442,7 @@ socket.on('joinGameResponse', (data) => {
 	if (data.success){
 		myName.innerHTML = username;
 		gid = data.id;
+		uiDiv.style.display = "inline-block";
 		board.clearBoard();
 	}
 	else {
