@@ -53,8 +53,8 @@ ul {
 	right: 0;
 	max-height: 200px;
 	max-width: 500px;
-	background: #AABBCC;
-	border-radius: 10px;
+	background: #223344;
+	border-radius: 20px;
 	z-index: 10;
 }
 
@@ -64,7 +64,7 @@ ul {
 }
 
 .dialogbox > div > .dialogboxhead {
-	background: #AABBCC;
+	background: #223344;
 	font-size: 20px;
 	padding: 10px;
 	color: #FFFFFF;
@@ -72,24 +72,36 @@ ul {
 }
 
 .dialogbox > div > .dialogboxbody {
-	background: #AABBCC;
+	background: #223344;
 	font-size: 15px;
 	padding: 20px;
 	color: #FFFFFF;
 }
 
 .dialogbox > div > .dialogboxfoot {
-	background: #AABBCC;
+	background: #223344;
 	padding: 10px;
 	color: #FFFFFF;
 	text-align: right;
 }
 
 button.ok {
+	background-color: #AABBCC;
 	color: white;
 }
 
 button.ok:active {
+	background-color: #AABBCC;
+	color: white;
+}
+
+button.no {
+	background-color: #AABBCC;
+	color: white;
+}
+
+button.no:active {
+	background-color: #AABBCC;
 	color: white;
 }
 

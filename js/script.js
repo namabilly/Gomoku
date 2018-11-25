@@ -304,16 +304,16 @@ const alert = (msg) => {
 	dialogbox.style.display = "block";
 	dialoghead.innerHTML = "!";
 	dialogbody.innerHTML = msg;
-	dialogfoot.innerHTML = '<button class="btn ok" onclick="ok();">OK</button>';
+	dialogfoot.innerHTML = '<button class="btn btn-primary ok" onclick="ok();">OK</button>';
 }
 
 const confirm = (msg, task) => {
 	dialogoverlay.style.display = "block";
 	dialogbox.style.display = "block";
-	dialoghead.innerHTML = "?";
+	dialoghead.innerHTML = "";
 	dialogbody.innerHTML = msg;
-	dialogfoot.innerHTML = '<button class="btn ok" onclick="ok('+task+');">YES</button>     '
-							+ '<button class="btn no" onclick="no();">NO</button>';
+	dialogfoot.innerHTML = '<button class="btn btn-primary ok" onclick="ok('+task+');">YES</button>     '
+							+ '<button class="btn btn-primary no" onclick="no();">NO</button>';
 }
 
 const ok = (task) => {

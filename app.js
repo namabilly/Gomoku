@@ -23,6 +23,7 @@ class Game {
 		this.size = size; // {x, y}
 		this.players = [];
 		this.num_of_players = 0;
+		this.spectators = [];
 		this.pieces = [];
 		Game.list[this.id] = this;
 		this.status = 0;
@@ -264,7 +265,7 @@ io.sockets.on('connection', function (socket) {
 	socket.on('signUp', data => {
 		data.name = data.name.trim();
 		if (!data.name || data.name.length == 0)
-			socket.emit('signUpResponse', {success:false, msg:'name invalid, empty name is not accepted.'}); 
+			socket.emit('signUpResponse', {success:false, msg:'Name invalid, empty name is not accepted.'}); 
 		else if (data.name in Player.list)
 			// reconnect
 			if (!Player.list[data.name].isConnected){
@@ -278,7 +279,7 @@ io.sockets.on('connection', function (socket) {
 				socket.emit('signUpResponse', {success:true, username:data.name});
 			}
 			else
-				socket.emit('signUpResponse', {success:false, msg:'name exists, please try another one.'}); 
+				socket.emit('signUpResponse', {success:false, msg:'Name exists, please try another one.'}); 
 		else {
 			Player.addPlayer(data.name, socket); 
 			socket.broadcast.emit('playerJoined', {
