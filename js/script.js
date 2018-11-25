@@ -270,6 +270,11 @@ var undo_remain = UNDO_LIMIT;
 var opponent;
 
 undo.onclick = function(data, e){
+	if (undo_remain == 0) return;
+	confirm("Are you sure you want to undo?", doUndo);
+};
+
+const doUndo = () => {
 	if (undo_remain > 0) {
 		undo_remain--;
 		undoremain.innerHTML = undo_remain;
@@ -279,18 +284,50 @@ undo.onclick = function(data, e){
 			id: gid,
 			name: username,
 			turn: turn
-		})
+		});
 	}
-	if (undo_remain == 0) {
-		undoremain.style.backgroundColor = "#DDDDDD";
-	}
-}
-
+	if (undo_remain == 0) 
+		undoremain.style.backgroundColor = '#DDDDDD';
+	
+};
 
 
 // dialog
+var dialogoverlay = document.getElementById("dialogoverlay");
+var dialogbox = document.getElementById("dialogbox");
+var head = document.getElementById("dialoghead");
+var body = document.getElementById("dialogbody");
+var foot = document.getElementById("dialogfoot");
 
+const alert = (msg) => {
+	dialogoverlay.style.display = "block";
+	dialogbox.style.display = "block";
+	dialoghead.innerHTML = "!";
+	dialogbody.innerHTML = msg;
+	dialogfoot.innerHTML = '<button class="btn ok" onclick="ok();">OK</button>';
+}
 
+const confirm = (msg, task) => {
+	dialogoverlay.style.display = "block";
+	dialogbox.style.display = "block";
+	dialoghead.innerHTML = "?";
+	dialogbody.innerHTML = msg;
+	dialogfoot.innerHTML = '<button class="btn ok" onclick="ok('+task+');">YES</button>     '
+							+ '<button class="btn no" onclick="no();">NO</button>';
+}
+
+const ok = (task) => {
+	dialogoverlay.style.display = "none";
+	dialogbox.style.display = "none";
+	task();
+	return true;
+}
+
+const no = () => {
+	dialogoverlay.style.display = "none";
+	dialogbox.style.display = "none";
+	return false;
+}
 
 // chat
 

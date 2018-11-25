@@ -39,6 +39,7 @@ ul {
 	top: 0px;
 	left: 0px;
 	background: #FFFFFF;
+	height: 100%;
 	width: 100%;
 	z-index: 10;
 }
@@ -46,12 +47,51 @@ ul {
 .dialogbox {
 	display: none;
 	position: fixed;
-	background: #DDDDDD;
+	margin: auto;
+	top: 40%;
+	left: 0;
+	right: 0;
+	max-height: 200px;
+	max-width: 500px;
+	background: #AABBCC;
 	border-radius: 10px;
-	width: 500px;
 	z-index: 10;
 }
 
+.dialogbox > div {
+	background: #AABBCC;
+	margin: 8px;
+}
+
+.dialogbox > div > .dialogboxhead {
+	background: #AABBCC;
+	font-size: 20px;
+	padding: 10px;
+	color: #FFFFFF;
+	text-align: center;
+}
+
+.dialogbox > div > .dialogboxbody {
+	background: #AABBCC;
+	font-size: 15px;
+	padding: 20px;
+	color: #FFFFFF;
+}
+
+.dialogbox > div > .dialogboxfoot {
+	background: #AABBCC;
+	padding: 10px;
+	color: #FFFFFF;
+	text-align: right;
+}
+
+button.ok {
+	color: white;
+}
+
+button.ok:active {
+	color: white;
+}
 
 /* UI */
 
