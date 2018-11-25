@@ -241,8 +241,9 @@ const updateBoard = data => {
 		board.clearBoard();
 		board.load(data.pieces);
 		if (data.status != 0) {
-			var winner = (data.status==-1)? 'black' : 'white';
-			alert(winner + ' has won.');
+			var winner = (data.status==-1)? 'Black' : 'White';
+			alert(winner + ' wins.');
+			lock = true;
 		}
 		if (data.players.length > 1) {
 			for (let i in data.players) {

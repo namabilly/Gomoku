@@ -27,7 +27,7 @@ class Game {
 		this.pieces = [];
 		this.turn = 0;
 		Game.list[this.id] = this;
-		this.status = 0;
+		this.status = 0; // -1 black, 1 white
 	}
 	join(player){
 		if (this.isFull()) {
@@ -317,6 +317,12 @@ io.sockets.on('connection', function (socket) {
 			game.update();
 			return;
 		}
+		if (game.status != 0) {
+			socket.emit('error', {
+				msg: 'Game ended.'
+			});
+			return;
+		}
 		var piece = new Piece(game, {x:data.position.x, y:data.position.y}, p, game.turn);
 		game.put(piece);
 		p.lock = true;
@@ -326,7 +332,13 @@ io.sockets.on('connection', function (socket) {
 	socket.on('undo', data => {
 		var game = Game.list[data.id];
 		var p = Player.list[data.name];
-		var turn = data.turn;
+		var turn = game.turn;
+		if (game.status != 0) {
+			socket.emit('error', {
+				msg: 'Game ended.'
+			});
+			return;
+		}
 		game.undo(turn);
 		game.update();
 	});
