@@ -25,6 +25,7 @@ class Game {
 		this.num_of_players = 0;
 		this.spectators = [];
 		this.pieces = [];
+		this.turn = 0;
 		Game.list[this.id] = this;
 		this.status = 0;
 	}
@@ -40,6 +41,7 @@ class Game {
 	}
 	put(piece){
 		this.pieces.push(piece);
+		this.turn++;
 	}
 	undo(turn){
 		for (let i in this.pieces) {
@@ -51,6 +53,7 @@ class Game {
 	update(){
 		this.status = this.checkBoard();
 		var matrix = [];
+		this.turn = 0;
 		for (let i in this.pieces) {
 			var pie = this.pieces[i];
 			matrix.push({
@@ -60,13 +63,17 @@ class Game {
 					y: pie.position.y
 				}
 			});
+			this.turn++;
 		}
 		for (let i in this.players) {
-			Player.list[this.players[i]].socket.emit('updateBoard', {
+			let p = Player.list[this.players[i]];
+			p.update();
+			p.socket.emit('updateBoard', {
 				id: this.id,
 				pieces: matrix,
 				status: this.status,
-				players: this.players
+				players: this.players,
+				lock: p.lock
 			});
 		}
 	}
@@ -196,6 +203,7 @@ class Player {
 		this.color = undefined;
 		this.opponent = undefined;
 		this.lock = false;
+		this.side = 0;
 		this.isConnected = true;
 		Player.list[this.name] = this;
 	}
@@ -203,7 +211,10 @@ class Player {
 		Game.join(this);
 	}
 	update(){
-		// nothing
+		// lock
+		if (this.game!=undefined&&this.side!=0) {
+			this.lock = ((Game.list[this.game].turn%2)*2-1 != this.side);
+		}
 	}
 	static update(){
 		for (let name in Player.list) {
@@ -296,8 +307,19 @@ io.sockets.on('connection', function (socket) {
 	socket.on('put', data => {
 		var game = Game.list[data.id];
 		var p = Player.list[data.name];
-		var piece = new Piece(game, {x:data.position.x, y:data.position.y}, p, data.turn);
+		if (p.side == 0) {
+			p.side = (game.turn%2)*2 - 1;
+		}
+		if (p.lock) {
+			socket.emit('error', {
+				msg: 'Put failed. Not player\'s turn.'
+			});
+			game.update();
+			return;
+		}
+		var piece = new Piece(game, {x:data.position.x, y:data.position.y}, p, game.turn);
 		game.put(piece);
+		p.lock = true;
 		game.update();
 	});
 	
@@ -317,6 +339,8 @@ io.sockets.on('connection', function (socket) {
 			message: data
 		});
 	});
+	
+	socket.on('error', () => {});
 	
 });
 

@@ -80,7 +80,7 @@ class Board {
 		this.draw();
 	}
 	load(pieces){
-		lock = (pieces.length-this.turn)%2==0 && lock;
+		//lock = (pieces.length-this.turn)%2==0 && lock;
 		console.log(lock);
 		this.turn = pieces.length;
 		for (let i=0;i<pieces.length;i++) {
@@ -237,6 +237,7 @@ c.onmousemove = function(data, e){
 
 const updateBoard = data => {
 	if (data.id==gid) {
+		lock = data.lock;
 		board.clearBoard();
 		board.load(data.pieces);
 		if (data.status != 0) {
@@ -511,5 +512,7 @@ socket.on('newMessage', (data) => {
 	addChatMessage(data);
 });
 
-
+socket.on('error', (data) => {
+	alert(data.msg);
+});
 
