@@ -120,6 +120,18 @@ button.no:active {
 	z-index: 5;
 }
 
+#signUpDiv > p {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	right: 0px;
+	bottom: 100px;
+	margin: auto;
+	height: 60px;
+	font-size: 30px;
+	color: white;
+}
+
 #signUpName {
 	border: 10px solid #000;
 	position: absolute;
