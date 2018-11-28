@@ -145,6 +145,7 @@ button.no:active {
 	height: 60px;
 	width: 50%;
 	max-width: 500px;
+	text-align: center;
 }
 
 /* UI */

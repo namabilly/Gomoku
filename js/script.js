@@ -476,6 +476,9 @@ socket.on('signUpResponse', (data) => {
 			name: username
 		});
 		log('Welcome to Gomoku');
+		setTimeout(function(){
+			document.getElementById('chatbtn').click();
+		}, 500);
 	}
 	else {
 		alert(data.msg);
