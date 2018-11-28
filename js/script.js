@@ -468,7 +468,6 @@ var gid = -1;
 socket.on('signUpResponse', (data) => {
 	if (data.success){
 		$('#signUpDiv').fadeOut('slow');
-		signUpDiv.style.display = 'none';
 		$currentInput = $inputMessage.focus();
 		p = new Player(data.username);
 		username = data.username;
