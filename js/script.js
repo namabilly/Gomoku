@@ -4,13 +4,15 @@ var socket = io();
 // sign up
 var signUpDiv = document.getElementById("signUpDiv"); 
 var signUpName = document.getElementById("signUpName"); 
-var signUpButton = document.getElementById("signUpButton"); 
-var $signUpName = $('.signUpName');
+var $signUpName = $('#signUpName');
 
-signUpButton.onclick = function(){
-	socket.emit('signUp', {name:signUpName.value}); 
+const signUp = () => {
+	var message = signUpName.value;
+	message = cleanInput(message);
+	if (message) {
+		socket.emit('signUp', {name: message}); 
+	}
 };
-
 
 // game
 class Board {
@@ -206,6 +208,7 @@ var p2 = new Player("#FFFFFF");
 //board.put({x:7, y:8}, p2);
 ctx.strokeStyle = "#000000";
 var lock = false;
+var watching = false;
 
 const getMousePos = function (canvas, evt) {
     var rect = canvas.getBoundingClientRect();
@@ -245,7 +248,7 @@ const updateBoard = data => {
 			alert(winner + ' wins.');
 			lock = true;
 		}
-		if (data.players.length > 1) {
+		if (!watching && data.players.length > 1) {
 			for (let i in data.players) {
 				if (data.players[i]!=username) {
 					opponent = data.players[i];
@@ -309,13 +312,13 @@ const alert = (msg) => {
 	dialogfoot.innerHTML = '<button class="btn btn-primary ok" onclick="ok();">OK</button>';
 }
 
-const confirm = (msg, task) => {
+const confirm = (msg, task, b1='YES', b2='NO') => {
 	dialogoverlay.style.display = "block";
 	dialogbox.style.display = "block";
 	dialoghead.innerHTML = "";
 	dialogbody.innerHTML = msg;
-	dialogfoot.innerHTML = '<button class="btn btn-primary ok" onclick="ok('+task+');">YES</button>     '
-							+ '<button class="btn btn-primary no" onclick="no();">NO</button>';
+	dialogfoot.innerHTML = '<button class="btn btn-primary ok" onclick="ok('+task+');">'+b1+'</button>     '
+							+ '<button class="btn btn-primary no" onclick="no();">'+b2+'</button>';
 }
 
 const ok = (task) => {
@@ -342,7 +345,7 @@ var username;
 var connected = false;
 var typing = false;
 var lastTypingTime;
-var $currentInput = $inputMessage.focus();
+var $currentInput = $signUpName.focus();
 
 const addParticipantsMessage = (data) => {
 	var message = '';
@@ -438,7 +441,8 @@ $window.keydown(event => {
 			sendMessage();
 			typing = false;
 		} else {
-			alert("Please join first!");
+			//alert("Please join first!");
+			signUp();
 		}
 	}
 });
@@ -463,7 +467,9 @@ var p = undefined;
 var gid = -1;
 socket.on('signUpResponse', (data) => {
 	if (data.success){
+		$('#signUpDiv').fadeOut('slow');
 		signUpDiv.style.display = 'none';
+		$currentInput = $inputMessage.focus();
 		p = new Player(data.username);
 		username = data.username;
 		connected = true;
@@ -482,6 +488,20 @@ socket.on('joinGameResponse', (data) => {
 		myName.innerHTML = username;
 		gid = data.id;
 		uiDiv.style.display = "inline-block";
+		board.clearBoard();
+	}
+	else {
+		alert(data.msg);
+	}
+});
+
+socket.on('watchGameResponse', (data) => {
+	if (data.success){
+		myName.innerHTML = data.players.pop();
+		oppoName.innerHTML = data.players.pop() || "";
+		uiDiv.style.display = "inline-block";
+		undo.style.display = "none";
+		concede.style.display = "none";
 		board.clearBoard();
 	}
 	else {
@@ -513,7 +533,7 @@ socket.on('newMessage', (data) => {
 	addChatMessage(data);
 });
 
-socket.on('error', (data) => {
+socket.on('err', (data) => {
 	alert(data.msg);
 });
 

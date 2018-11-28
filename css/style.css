@@ -105,6 +105,36 @@ button.no:active {
 	color: white;
 }
 
+/* Sign Up */
+
+#signUpDiv {
+	position: fixed;
+	opacity: 0.99;
+	top: 0px;
+	left: 0px;
+	background: #223344;
+	height: 100%;
+	width: 100%;
+	text-align: center;
+	vertical-align: center;
+	z-index: 5;
+}
+
+#signUpName {
+	border: 10px solid #000;
+	position: absolute;
+	margin: auto;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	outline: none;
+	padding-left: 10px;
+	height: 60px;
+	width: 50%;
+	max-width: 500px;
+}
+
 /* UI */
 
 .uiDiv {

@@ -39,6 +39,15 @@ class Game {
 		console.log('Joined game 10' + this.id + ' successfully.');
 		return 0;
 	}
+	watch(player){
+		this.spectators.push(player.name);
+		console.log('Watching game 10' + this.id + '.');
+		player.socket.emit('watchGameResponse', {
+			success: true,
+			id: this.id,
+			players: this.players
+		});
+	}
 	put(piece){
 		this.pieces.push(piece);
 		this.turn++;
@@ -68,6 +77,17 @@ class Game {
 		for (let i in this.players) {
 			let p = Player.list[this.players[i]];
 			p.update();
+			p.socket.emit('updateBoard', {
+				id: this.id,
+				pieces: matrix,
+				status: this.status,
+				players: this.players,
+				lock: p.lock
+			});
+		}
+		for (let i in this.spectators) {
+			let p = Player.list[this.spectators[i]];
+			p.lock = true;
 			p.socket.emit('updateBoard', {
 				id: this.id,
 				pieces: matrix,
@@ -304,6 +324,14 @@ io.sockets.on('connection', function (socket) {
 		p.joinGame();
 	});
 	
+	socket.on('watchGame', data => {
+		var game = Game.list[data.id];
+		var p = Player.list[data.name];
+		if (game) {
+			game.watch(p);
+		}
+	});
+	
 	socket.on('put', data => {
 		var game = Game.list[data.id];
 		var p = Player.list[data.name];
@@ -311,14 +339,14 @@ io.sockets.on('connection', function (socket) {
 			p.side = (game.turn%2)*2 - 1;
 		}
 		if (p.lock) {
-			socket.emit('error', {
+			socket.emit('err', {
 				msg: 'Put failed. Not player\'s turn.'
 			});
 			game.update();
 			return;
 		}
 		if (game.status != 0) {
-			socket.emit('error', {
+			socket.emit('err', {
 				msg: 'Game ended.'
 			});
 			return;
@@ -334,7 +362,7 @@ io.sockets.on('connection', function (socket) {
 		var p = Player.list[data.name];
 		var turn = game.turn;
 		if (game.status != 0) {
-			socket.emit('error', {
+			socket.emit('err', {
 				msg: 'Game ended.'
 			});
 			return;
