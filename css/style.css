@@ -166,10 +166,31 @@ button.no:active {
 
 #roomDiv > ul {
 	columns: 3;
+	text-align: center;
+	vertical-align: center;
+	margin: 0;
 }
 
 li.gameRoom {
 	color: white;
+	font-size: 40px;
+}
+
+button.gameRoom {
+	color: white;
+	font-size: 40px;
+	padding: 10px;
+	margin: 10px;
+	width: 150px;
+}
+
+.back {
+	position: fixed;
+	right: 20px;
+	bottom: 20px;
+	height: 40px;
+	width: 100px;
+	z-index: 5;
 }
 
 /* UI */

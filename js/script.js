@@ -18,10 +18,24 @@ const signUp = () => {
 // rooms
 var watchbtn = document.getElementById("watch");
 var roomDiv = document.getElementById("roomDiv");
+var back = document.createElement("BUTTON");
+back.innerHTML = "Return";
+back.classList.add("btn");
+back.classList.add("btn-primary");
+back.classList.add("back");
 
 watchbtn.onclick = () => {
 	socket.emit('getCurrentGames', {});
 };
+
+const goBack = () => {
+	while (roomDiv.firstChild) {
+		roomDiv.removeChild(roomDiv.firstChild);
+	}
+	roomDiv.style.display = "none";
+};
+
+back.onclick = goBack;
 
 const showRooms = (data) => {
 	var games = data.games;
@@ -30,12 +44,29 @@ const showRooms = (data) => {
 	for (let i in games) {
 		var node = document.createElement("LI");
 		node.classList.add("gameRoom");
+		var btn = document.createElement("BUTTON");
+		btn.classList.add("btn");
+		btn.classList.add("btn-primary");
+		btn.classList.add("gameRoom");
 		var info = document.createTextNode("10" + games[i]);
-		node.appendChild(info);
+		btn.appendChild(info)
+		btn.onclick = () => {
+			watchGame(games[i]);
+		};
+		node.appendChild(btn);
 		list.appendChild(node);
 	}
 	roomDiv.appendChild(list);
+	roomDiv.appendChild(back);
 	roomDiv.style.display = "block";
+}
+
+const watchGame = (id) => {
+	socket.emit('watchGame', {
+		name: username,
+		id: id
+	});
+	goBack();
 }
 
 // game
@@ -279,6 +310,16 @@ const updateBoard = data => {
 					oppoName.innerHTML = opponent;
 				}
 			}
+		}
+	}
+	if (watching) {
+		lock = data.lock;
+		board.clearBoard();
+		board.load(data.pieces);
+		if (data.status != 0) {
+			var winner = (data.status==-1)? 'Black' : 'White';
+			alert(winner + ' wins.');
+			lock = true;
 		}
 	}
 };
@@ -537,7 +578,8 @@ socket.on('watchGameResponse', (data) => {
 		uiDiv.style.display = "inline-block";
 		undo.style.display = "none";
 		concede.style.display = "none";
-		board.clearBoard();
+		//board.clearBoard();
+		watching = true;
 	}
 	else {
 		alert(data.msg);

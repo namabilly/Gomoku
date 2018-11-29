@@ -90,14 +90,13 @@ class Game {
 		for (let i in this.spectators) {
 			let p = Player.list[this.spectators[i]];
 			p.lock = true;
-			if (p.isConnected)
-				p.socket.emit('updateBoard', {
-					id: this.id,
-					pieces: matrix,
-					status: this.status,
-					players: this.players,
-					lock: p.lock
-				});
+			p.socket.emit('updateBoard', {
+				id: this.id,
+				pieces: matrix,
+				status: this.status,
+				players: this.players,
+				lock: p.lock
+			});
 		}
 	}
 	isFull(){
@@ -360,6 +359,7 @@ io.sockets.on('connection', function (socket) {
 		if (game) {
 			game.watch(p);
 		}
+		game.update();
 	});
 	
 	socket.on('put', data => {
