@@ -367,8 +367,26 @@ io.sockets.on('connection', function (socket) {
 			});
 			return;
 		}
+		if (p.side == 0) {
+			socket.emit('err', {
+				msg: 'Nothing to undo.'
+			});
+			return;
+		}
+		turn -= p.lock ? 0 : 1;
 		game.undo(turn);
 		game.update();
+	});
+	
+	socket.on('concede', data => {
+		// not correct, not concern now
+		var game = Game.list[data.id];
+		var p = Player.list[data.name];
+		if (game.players.length > 1) {
+			if (p.side != 0) {
+				game.status = - p.side;
+			}
+		}
 	});
 	
 	// when the client emits 'newMessage', this listens and executes
