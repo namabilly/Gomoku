@@ -76,7 +76,7 @@ class Game {
 		}
 		for (let i in this.players) {
 			let p = Player.list[this.players[i]];
-			if (p.isConnected) {
+			if (p) {
 				p.update();
 				p.socket.emit('updateBoard', {
 					id: this.id,
@@ -90,13 +90,14 @@ class Game {
 		for (let i in this.spectators) {
 			let p = Player.list[this.spectators[i]];
 			p.lock = true;
-			p.socket.emit('updateBoard', {
-				id: this.id,
-				pieces: matrix,
-				status: this.status,
-				players: this.players,
-				lock: p.lock
-			});
+			if (p)
+				p.socket.emit('updateBoard', {
+					id: this.id,
+					pieces: matrix,
+					status: this.status,
+					players: this.players,
+					lock: p.lock
+				});
 		}
 	}
 	isFull(){
@@ -108,6 +109,9 @@ class Game {
 		if (this.num_of_players==0) {
 			Game.endGame(this.id);
 		}
+	}
+	removeSpectator(name){
+		this.spectators.pop(name);
 	}
 	checkBoard(){
 		var matrix = [];
@@ -356,8 +360,20 @@ io.sockets.on('connection', function (socket) {
 	socket.on('watchGame', data => {
 		var game = Game.list[data.id];
 		var p = Player.list[data.name];
+		if (data.id == p.game) {
+			socket.emit('err', {
+				msg: 'Cannot watch your own game!'
+			});
+			return;
+		}
 		if (game) {
 			game.watch(p);
+			if (p.game!=undefined) {
+				var g = Game.list[p.game];
+				g.removePlayer(p.name);
+				g.removeSpectator(p.name);
+			}
+			p.game = data.id;
 		}
 		game.update();
 	});
