@@ -498,6 +498,9 @@ socket.on('signUpResponse', (data) => {
 		p = new Player(data.username);
 		username = data.username;
 		connected = true;
+		if (data.id!=undefined) {
+			gid = data.id;
+		}
 		socket.emit('joinGame', {
 			name: username
 		});

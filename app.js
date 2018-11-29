@@ -310,14 +310,19 @@ io.sockets.on('connection', function (socket) {
 		else if (data.name in Player.list)
 			// reconnect
 			if (!Player.list[data.name].isConnected){
-				Player.list[data.name].isConnected = true;
+				var p = Player.list[data.name];
+				p.isConnected = true;
 				Object.defineProperty(socket, 'name', {value:data.name});
-				Player.list[data.name].socket = socket;
+				p.socket = socket;
 				socket.broadcast.emit('playerReconnected', {
 					username: data.name
 				});
 				console.log('Player ' + data.name + ' reconnected.');
-				socket.emit('signUpResponse', {success:true, username:data.name});
+				socket.emit('signUpResponse', {
+					success: true, 
+					username: data.name,
+					id: p.game
+				});
 			}
 			else
 				socket.emit('signUpResponse', {success:false, msg:'Name exists, please try another one.'}); 
@@ -331,7 +336,15 @@ io.sockets.on('connection', function (socket) {
 	
 	socket.on('joinGame', data => {
 		var p = Player.list[data.name];
-		p.joinGame();
+		if (p.game!=undefined) {
+			socket.emit('joinGameResponse', {
+				success: true,
+				id: p.game
+			});
+			Game.list[p.game].update();
+		}
+		else
+			p.joinGame();
 	});
 	
 	socket.on('getCurrentGames', data => {
