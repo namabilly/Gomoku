@@ -76,25 +76,28 @@ class Game {
 		}
 		for (let i in this.players) {
 			let p = Player.list[this.players[i]];
-			p.update();
-			p.socket.emit('updateBoard', {
-				id: this.id,
-				pieces: matrix,
-				status: this.status,
-				players: this.players,
-				lock: p.lock
-			});
+			if (p.isConnected) {
+				p.update();
+				p.socket.emit('updateBoard', {
+					id: this.id,
+					pieces: matrix,
+					status: this.status,
+					players: this.players,
+					lock: p.lock
+				});
+			}
 		}
 		for (let i in this.spectators) {
 			let p = Player.list[this.spectators[i]];
 			p.lock = true;
-			p.socket.emit('updateBoard', {
-				id: this.id,
-				pieces: matrix,
-				status: this.status,
-				players: this.players,
-				lock: p.lock
-			});
+			if (p.isConnected)
+				p.socket.emit('updateBoard', {
+					id: this.id,
+					pieces: matrix,
+					status: this.status,
+					players: this.players,
+					lock: p.lock
+				});
 		}
 	}
 	isFull(){
@@ -204,6 +207,13 @@ class Game {
 	static createGame(size){
 		new Game(size);
 		console.log('New game 10' + (GAME_ID-1) + ' created.');
+	}
+	static getGames(){
+		var games = [];
+		for (let i in Game.list) {
+			games.push(Game.list[i].id);
+		}
+		return games;
 	}
 	static endGame(id){
 		delete Game.list[id];
@@ -323,6 +333,13 @@ io.sockets.on('connection', function (socket) {
 		var p = Player.list[data.name];
 		p.joinGame();
 	});
+	
+	socket.on('getCurrentGames', data => {
+		var games = Game.getGames();
+		socket.emit('currentGames', {
+			games: games
+		});
+	})
 	
 	socket.on('watchGame', data => {
 		var game = Game.list[data.id];

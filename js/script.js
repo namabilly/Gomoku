@@ -14,6 +14,14 @@ const signUp = () => {
 	}
 };
 
+
+// front
+var watchbtn = document.getElementById("watch");
+
+watchbtn.onclick = () => {
+	socket.emit('getCurrentGames', {});
+};
+
 // game
 class Board {
 	constructor(position, size, format, color){
@@ -334,6 +342,7 @@ const no = () => {
 	return false;
 }
 
+
 // chat
 
 var $window = $(window);
@@ -460,6 +469,7 @@ $signUpName.click(() => {
 	$currentInput = $signUpName.focus();
 });
 
+
 // socket events
 
 // client
@@ -495,6 +505,10 @@ socket.on('joinGameResponse', (data) => {
 	else {
 		alert(data.msg);
 	}
+});
+
+socket.on('currentGames', (data) => {
+	console.log(data.games);
 });
 
 socket.on('watchGameResponse', (data) => {
