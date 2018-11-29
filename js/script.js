@@ -15,12 +15,28 @@ const signUp = () => {
 };
 
 
-// front
+// rooms
 var watchbtn = document.getElementById("watch");
+var roomDiv = document.getElementById("roomDiv");
 
 watchbtn.onclick = () => {
 	socket.emit('getCurrentGames', {});
 };
+
+const showRooms = (data) => {
+	var games = data.games;
+	console.log(games);
+	var list = document.createElement("UL");
+	for (let i in games) {
+		var node = document.createElement("LI");
+		node.classList.add("gameRoom");
+		var info = document.createTextNode("10" + games[i]);
+		node.appendChild(info);
+		list.appendChild(node);
+	}
+	roomDiv.appendChild(list);
+	roomDiv.style.display = "block";
+}
 
 // game
 class Board {
@@ -508,7 +524,7 @@ socket.on('joinGameResponse', (data) => {
 });
 
 socket.on('currentGames', (data) => {
-	console.log(data.games);
+	showRooms(data);
 });
 
 socket.on('watchGameResponse', (data) => {

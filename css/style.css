@@ -148,6 +148,30 @@ button.no:active {
 	text-align: center;
 }
 
+/* Selection */
+
+#roomDiv {
+	display: none;
+	position: fixed;
+	opacity: 0.99;
+	top: 0px;
+	left: 0px;
+	background: #223344;
+	height: 100%;
+	width: 100%;
+	text-align: center;
+	vertical-align: center;
+	z-index: 5;
+}
+
+#roomDiv > ul {
+	columns: 3;
+}
+
+li.gameRoom {
+	color: white;
+}
+
 /* UI */
 
 .uiDiv {
