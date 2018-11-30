@@ -263,7 +263,10 @@ class Player {
 	}
 	static removePlayer(name){
 		var game = Game.list[Player.list[name].game];
-		game.removePlayer(name);
+		if (name in game.players)
+			game.removePlayer(name);
+		if (name in game.spectators)
+			game.removeSpectator(name);
 		Player.list[name].socket.broadcast.emit('playerLeft', {
 			username: name
 		});
