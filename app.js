@@ -448,6 +448,11 @@ io.sockets.on('connection', function (socket) {
 	
 });
 
+process.on('uncaughtException', function (exception) {
+	// handle or ignore error
+	console.log(exception);
+});
+
 
 
 // keep the server up.....
