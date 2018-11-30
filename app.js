@@ -237,6 +237,7 @@ class Player {
 		this.opponent = undefined;
 		this.lock = false;
 		this.side = 0;
+		this.watching = false;
 		this.isConnected = true;
 		Player.list[this.name] = this;
 	}
@@ -324,7 +325,8 @@ io.sockets.on('connection', function (socket) {
 				socket.emit('signUpResponse', {
 					success: true, 
 					username: data.name,
-					id: p.game
+					id: p.game,
+					watching: p.watching
 				});
 			}
 			else
@@ -368,6 +370,7 @@ io.sockets.on('connection', function (socket) {
 		}
 		if (game) {
 			game.watch(p);
+			p.watching = true;
 			if (p.game!=undefined) {
 				var g = Game.list[p.game];
 				g.removePlayer(p.name);

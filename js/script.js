@@ -321,6 +321,8 @@ const updateBoard = data => {
 			alert(winner + ' wins.');
 			lock = true;
 		}
+		myName.innerHTML = data.players.pop();
+		oppoName.innerHTML = data.players.pop() || "";
 	}
 };
 
@@ -542,6 +544,7 @@ socket.on('signUpResponse', (data) => {
 		if (data.id!=undefined) {
 			gid = data.id;
 		}
+		if (data.watching) watching = true;
 		socket.emit('joinGame', {
 			name: username
 		});
@@ -578,7 +581,7 @@ socket.on('watchGameResponse', (data) => {
 		uiDiv.style.display = "inline-block";
 		undo.style.display = "none";
 		concede.style.display = "none";
-		//board.clearBoard();
+		board.clearBoard();
 		watching = true;
 	}
 	else {
