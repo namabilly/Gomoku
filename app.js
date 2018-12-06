@@ -28,6 +28,7 @@ class Game {
 		this.turn = 0;
 		Game.list[this.id] = this;
 		this.status = 0; // -1 black, 1 white
+		this.conceder = undefined; // the one who concedes
 	}
 	join(player){
 		if (this.isFull()) {
@@ -60,7 +61,7 @@ class Game {
 		}
 	}
 	update(){
-		this.status = this.checkBoard();
+		if (this.status === 0) this.status = this.checkBoard();
 		var matrix = [];
 		this.turn = 0;
 		for (let i in this.pieces) {
@@ -83,22 +84,24 @@ class Game {
 					pieces: matrix,
 					status: this.status,
 					players: this.players,
-					lock: p.lock
+					lock: p.lock,
+					conceder: this.conceder
 				});
 			}
 		}
-		console.log(this.spectators);
 		for (let i in this.spectators) {
 			let p = Player.list[this.spectators[i]];
-			p.lock = true;
-			if (p)
+			if (p) {
+				p.lock = true;
 				p.socket.emit('updateBoard', {
 					id: this.id,
 					pieces: matrix,
 					status: this.status,
 					players: this.players,
-					lock: p.lock
+					lock: p.lock,
+					conceder: this.conceder
 				});
+			}
 		}
 	}
 	isFull(){
@@ -443,11 +446,15 @@ io.sockets.on('connection', function (socket) {
 		// not correct, not concern now
 		var game = Game.list[data.id];
 		var p = Player.list[data.name];
-		if (game.players.length > 1) {
-			if (p.side != 0) {
-				game.status = - p.side;
-			}
+		if (game.players.length <= 1||p.side === 0) {
+			socket.emit('err', {
+				msg: 'Game not started.'
+			});
+			return;
 		}
+		game.status = - p.side;
+		game.conceder = data.name;
+		game.update();
 	});
 	
 	socket.on('update', data => {

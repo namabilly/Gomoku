@@ -299,8 +299,13 @@ const updateBoard = data => {
 		board.clearBoard();
 		board.load(data.pieces);
 		if (data.status != 0) {
+			var temp = '';
+			if (data.conceder)
+				if (data.conceder === username)
+					temp += 'You conceded.\n<br />';
+				else temp += data.conceder + ' conceded.\n<br />';
 			var winner = (data.status==-1)? 'Black' : 'White';
-			alert(winner + ' wins.');
+			alert(temp + winner + ' wins.');
 			lock = true;
 		}
 		if (!watching && data.players.length > 1) {
@@ -311,19 +316,30 @@ const updateBoard = data => {
 				}
 			}
 		}
+		/*
+		if (watching) {
+			myName.innerHTML = data.players.pop();
+			oppoName.innerHTML = data.players.pop() || "";
+		}
+		*/
 	}
+	
 	if (watching) {
 		lock = data.lock;
 		board.clearBoard();
 		board.load(data.pieces);
 		if (data.status != 0) {
+			var temp = '';
+			if (data.conceder)
+				temp += data.conceder + ' conceded.\n<br />';
 			var winner = (data.status==-1)? 'Black' : 'White';
-			alert(winner + ' wins.');
+			alert(temp + winner + ' wins.');
 			lock = true;
 		}
 		myName.innerHTML = data.players.pop();
 		oppoName.innerHTML = data.players.pop() || "";
 	}
+	
 };
 
 
@@ -363,6 +379,16 @@ const doUndo = () => {
 	
 };
 
+concede.onclick = function(data, e){
+	confirm("Are you sure you want to concede?", doConcede);
+};
+
+const doConcede = () => {
+	socket.emit('concede', {
+			id: gid,
+			name: username
+	});
+}
 
 // dialog
 var dialogoverlay = document.getElementById("dialogoverlay");
@@ -388,7 +414,7 @@ const confirm = (msg, task, b1='YES', b2='NO') => {
 							+ '<button class="btn btn-primary no" onclick="no();">'+b2+'</button>';
 }
 
-const ok = (task) => {
+const ok = (task=foo) => {
 	dialogoverlay.style.display = "none";
 	dialogbox.style.display = "none";
 	task();
@@ -401,6 +427,7 @@ const no = () => {
 	return false;
 }
 
+const foo = () => {};
 
 // chat
 
