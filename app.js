@@ -87,6 +87,7 @@ class Game {
 				});
 			}
 		}
+		console.log(this.spectators);
 		for (let i in this.spectators) {
 			let p = Player.list[this.spectators[i]];
 			p.lock = true;
@@ -104,14 +105,24 @@ class Game {
 		return this.num_of_players>=2;
 	}
 	removePlayer(name){
-		this.players.pop(name);
-		this.num_of_players--;
-		if (this.num_of_players==0) {
-			Game.endGame(this.id);
+		for (let i in this.players) {
+			if (this.players[i] === name) {
+				this.players.splice(i, 1);
+				this.num_of_players--;
+					if (this.num_of_players==0) {
+						Game.endGame(this.id);
+					}
+				break;
+			}
 		}
 	}
 	removeSpectator(name){
-		this.spectators.pop(name);
+		for (let i in this.spectators) {
+			if (this.spectators[i] === name) {
+				this.spectators.splice(i, 1);
+				break;
+			}
+		}
 	}
 	checkBoard(){
 		var matrix = [];
@@ -263,10 +274,8 @@ class Player {
 	}
 	static removePlayer(name){
 		var game = Game.list[Player.list[name].game];
-		if (name in game.players)
-			game.removePlayer(name);
-		if (name in game.spectators)
-			game.removeSpectator(name);
+		game.removePlayer(name);
+		game.removeSpectator(name);
 		Player.list[name].socket.broadcast.emit('playerLeft', {
 			username: name
 		});
@@ -439,6 +448,11 @@ io.sockets.on('connection', function (socket) {
 				game.status = - p.side;
 			}
 		}
+	});
+	
+	socket.on('update', data => {
+		var game = Game.list[data.id];
+		game.update();
 	});
 	
 	// when the client emits 'newMessage', this listens and executes
