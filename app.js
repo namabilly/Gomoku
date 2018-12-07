@@ -93,11 +93,16 @@ class Game {
 			let p = Player.list[this.spectators[i]];
 			if (p) {
 				p.lock = true;
+				var sides = [];
+				for (let i in this.players) {
+					sides.push(Player.list[this.players[i]].side);
+				}
 				p.socket.emit('updateBoard', {
 					id: this.id,
 					pieces: matrix,
 					status: this.status,
 					players: this.players,
+					sides: sides,
 					lock: p.lock,
 					conceder: this.conceder
 				});

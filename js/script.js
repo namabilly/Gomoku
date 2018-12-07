@@ -295,11 +295,11 @@ c.onmousemove = function(data, e){
 
 const updateBoard = data => {
 	console.log('updating');
-	if (data.id==gid) {
+	if (data.id===gid) {
 		lock = data.lock;
 		board.clearBoard();
 		board.load(data.pieces);
-		if (!side) side = ((board.turn%2==0||lock)&&(board.turn%2!=0||!lock))? -1 : 1;
+		if (!side) side = ((board.turn%2===0||lock)&&(board.turn%2!==0||!lock))? -1 : 1;
 		if (board.turn==0) side = 0;
 		if (!watching && data.players.length > 1) {
 			for (let i in data.players) {
@@ -309,8 +309,8 @@ const updateBoard = data => {
 				}
 			}
 		}
-		if (side!=0) {
-			if (side==-1) {
+		if (side!==0) {
+			if (side===-1) {
 				mySide.classList.add("black");
 				oppoSide.classList.add("white");
 			} else {
@@ -326,7 +326,7 @@ const updateBoard = data => {
 			}
 				
 		}
-		if (data.status != 0) {
+		if (data.status !== 0) {
 			mySide.classList.remove("blink");
 			oppoSide.classList.remove("blink");
 			var temp = '';
@@ -334,7 +334,7 @@ const updateBoard = data => {
 				if (data.conceder === username)
 					temp += 'You conceded.\n<br />';
 				else temp += data.conceder + ' conceded.\n<br />';
-			var winner = (data.status==-1)? 'Black' : 'White';
+			var winner = (data.status===-1)? 'Black' : 'White';
 			alert(temp + winner + ' wins.');
 			lock = true;
 		}
@@ -350,18 +350,40 @@ const updateBoard = data => {
 		lock = data.lock;
 		board.clearBoard();
 		board.load(data.pieces);
-		if (data.status != 0) {
+		if (data.status !== 0) {
 			mySide.classList.remove("blink");
 			oppoSide.classList.remove("blink");
 			var temp = '';
 			if (data.conceder)
 				temp += data.conceder + ' conceded.\n<br />';
-			var winner = (data.status==-1)? 'Black' : 'White';
+			var winner = (data.status===-1)? 'Black' : 'White';
 			alert(temp + winner + ' wins.');
 			lock = true;
 		}
-		myName.innerHTML = data.players.pop();
-		oppoName.innerHTML = data.players.pop() || "";
+		myName.innerHTML = data.players.shift();
+		oppoName.innerHTML = data.players.shift() || "";
+		var myside = data.sides.shift();
+		if (myside===-1) {
+			mySide.classList.add("black");
+			oppoSide.classList.add("white");
+		} else if (myside===1) {
+			mySide.classList.add("white");
+			oppoSide.classList.add("black");
+		} else {
+			mySide.classList.remove("black");
+			mySide.classList.remove("white");
+			mySide.classList.remove("blink");
+			oppoSide.classList.remove("black");
+			oppoSide.classList.remove("white");
+			oppoSide.classList.remove("blink");
+		}
+		if ((board.turn%2===0||myside===1)&&(board.turn%2!==1||myside===-1)) {
+			mySide.classList.add("blink");
+			oppoSide.classList.remove("blink");
+		} else {
+			mySide.classList.remove("blink");
+			oppoSide.classList.add("blink");
+		}
 	}
 	
 };
