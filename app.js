@@ -458,6 +458,12 @@ io.sockets.on('connection', function (socket) {
 			});
 			return;
 		}
+		if (game.status !== 0) {
+			socket.emit('err', {
+				msg: 'Game ended.'
+			});
+			return;
+		}
 		game.status = - p.side;
 		game.conceder = data.name;
 		game.update();
