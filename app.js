@@ -123,6 +123,7 @@ class Game {
 				break;
 			}
 		}
+		this.update();
 	}
 	removeSpectator(name){
 		for (let i in this.spectators) {

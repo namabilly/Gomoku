@@ -308,6 +308,8 @@ const updateBoard = data => {
 					oppoName.innerHTML = opponent;
 				}
 			}
+		} else if (data.players.length<=1) {
+			oppoName.innerHTML = "";
 		}
 		if (side!==0) {
 			if (side===-1) {
