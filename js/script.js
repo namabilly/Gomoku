@@ -350,16 +350,6 @@ const updateBoard = data => {
 		lock = data.lock;
 		board.clearBoard();
 		board.load(data.pieces);
-		if (data.status !== 0) {
-			mySide.classList.remove("blink");
-			oppoSide.classList.remove("blink");
-			var temp = '';
-			if (data.conceder)
-				temp += data.conceder + ' conceded.\n<br />';
-			var winner = (data.status===-1)? 'Black' : 'White';
-			alert(temp + winner + ' wins.');
-			lock = true;
-		}
 		myName.innerHTML = data.players.shift();
 		oppoName.innerHTML = data.players.shift() || "";
 		var myside = data.sides.shift();
@@ -383,6 +373,16 @@ const updateBoard = data => {
 		} else {
 			mySide.classList.remove("blink");
 			oppoSide.classList.add("blink");
+		}
+		if (data.status !== 0) {
+			mySide.classList.remove("blink");
+			oppoSide.classList.remove("blink");
+			var temp = '';
+			if (data.conceder)
+				temp += data.conceder + ' conceded.\n<br />';
+			var winner = (data.status===-1)? 'Black' : 'White';
+			alert(temp + winner + ' wins.');
+			lock = true;
 		}
 	}
 	
