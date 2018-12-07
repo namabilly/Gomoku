@@ -168,13 +168,10 @@ class Board {
 		if (res==0) {
 			if (gid!=-1) {
 				socket.emit('put', {
-					id: gid,
 					position: {
 						x: pos.x,
 						y: pos.y
-					},
-					name: username,
-					turn: this.turn
+					}
 				});
 				lock = !lock;
 			}
@@ -418,11 +415,7 @@ const doUndo = () => {
 		undoremain.innerHTML = undo_remain;
 		var turn = board.turn;
 		turn -= (lock) ? 0 : 1;
-		socket.emit('undo', {
-			id: gid,
-			name: username,
-			turn: turn
-		});
+		socket.emit('undo', {});
 	}
 	if (undo_remain == 0) 
 		undoremain.style.backgroundColor = '#DDDDDD';
@@ -434,10 +427,7 @@ concede.onclick = function(data, e){
 };
 
 const doConcede = () => {
-	socket.emit('concede', {
-			id: gid,
-			name: username
-	});
+	socket.emit('concede', {});
 }
 
 // dialog

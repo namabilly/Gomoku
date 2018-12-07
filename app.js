@@ -112,6 +112,14 @@ class Game {
 	isFull(){
 		return this.num_of_players>=2;
 	}
+	isInGame(position){
+		for (let i in this.pieces) {
+			var piece = this.pieces[i];
+			if (position.x===piece.position.x&&position.y===piece.position.y)
+				return true;
+		}
+		return false;
+	}
 	removePlayer(name){
 		for (let i in this.players) {
 			if (this.players[i] === name) {
@@ -403,11 +411,33 @@ io.sockets.on('connection', function (socket) {
 	});
 	
 	socket.on('put', data => {
-		var game = Game.list[data.id];
-		var p = Player.list[data.name];
-		if (p.side == 0) {
+		// get Player
+		var p = Player.list[socket.name];
+		if (!p) {
+			socket.emit('err', {
+				msg: 'Player does not exist.'
+			});
+			return;
+		}
+		// get Game
+		if (p.game===undefined) {
+			socket.emit('err', {
+				msg: 'No game joined.'
+			});
+			return;
+		}
+		var game = Game.list[p.game];
+		if (game===undefined) {
+			socket.emit('err', {
+				msg: 'Game does not exist.'
+			});
+			return;
+		}
+		// set side
+		if (p.side === 0) {
 			p.side = (game.turn%2)*2 - 1;
 		}
+		// check permission/turn
 		if (p.lock) {
 			socket.emit('err', {
 				msg: 'Put failed. Not player\'s turn.'
@@ -415,43 +445,102 @@ io.sockets.on('connection', function (socket) {
 			game.update();
 			return;
 		}
-		if (game.status != 0) {
+		// check game status
+		if (game.status !== 0) {
 			socket.emit('err', {
 				msg: 'Game ended.'
 			});
 			return;
 		}
-		var piece = new Piece(game, {x:data.position.x, y:data.position.y}, p, game.turn);
+		// check piece position
+		var x = data.position.x,
+			y = data.position.y;
+		if (x < 0 || x >= SIZE.x || y < 0 || y >= SIZE.y) {
+			socket.emit('err', {
+				msg: 'Put failed. Position out of bound.'
+			});
+			return;
+		}
+		if (game.isInGame({x:x, y:y})) {
+			socket.emit('err', {
+				msg: 'Put failed. Position not empty.'
+			});
+			return;
+		}
+		// put piece
+		var piece = new Piece(game, {x:x, y:y}, p, game.turn);
 		game.put(piece);
 		p.lock = true;
 		game.update();
 	});
 	
 	socket.on('undo', data => {
-		var game = Game.list[data.id];
-		var p = Player.list[data.name];
-		var turn = game.turn;
-		if (game.status != 0) {
+		// get Player
+		var p = Player.list[socket.name];
+		if (!p) {
+			socket.emit('err', {
+				msg: 'Player does not exist.'
+			});
+			return;
+		}
+		// get Game
+		if (p.game===undefined) {
+			socket.emit('err', {
+				msg: 'No game joined.'
+			});
+			return;
+		}
+		var game = Game.list[p.game];
+		if (game===undefined) {
+			socket.emit('err', {
+				msg: 'Game does not exist.'
+			});
+			return;
+		}
+		// check game status
+		if (game.status !== 0) {
 			socket.emit('err', {
 				msg: 'Game ended.'
 			});
 			return;
 		}
-		if (p.side == 0) {
+		if (p.side === 0) {
 			socket.emit('err', {
 				msg: 'Nothing to undo.'
 			});
 			return;
 		}
+		// undo
+		var turn = game.turn;
 		turn -= p.lock ? 0 : 1;
 		game.undo(turn);
 		game.update();
 	});
 	
 	socket.on('concede', data => {
-		// not correct, not concern now
-		var game = Game.list[data.id];
-		var p = Player.list[data.name];
+		// get Player
+		var p = Player.list[socket.name];
+		if (!p) {
+			socket.emit('err', {
+				msg: 'Player does not exist.'
+			});
+			return;
+		}
+		// get Game
+		if (p.game===undefined) {
+			socket.emit('err', {
+				msg: 'No game joined.'
+			});
+			return;
+		}
+		var game = Game.list[p.game];
+		if (game===undefined) {
+			socket.emit('err', {
+				msg: 'Game does not exist.'
+			});
+			return;
+		}
+		// check game status
 		if (game.players.length <= 1||p.side === 0) {
 			socket.emit('err', {
 				msg: 'Game not started.'
@@ -464,6 +553,7 @@ io.sockets.on('connection', function (socket) {
 			});
 			return;
 		}
+		// concede
 		game.status = - p.side;
 		game.conceder = data.name;
 		game.update();
