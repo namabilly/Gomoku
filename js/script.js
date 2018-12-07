@@ -294,11 +294,41 @@ c.onmousemove = function(data, e){
 }
 
 const updateBoard = data => {
+	console.log('updating');
 	if (data.id==gid) {
 		lock = data.lock;
 		board.clearBoard();
 		board.load(data.pieces);
+		if (!side) side = ((board.turn%2==0||lock)&&(board.turn%2!=0||!lock))? -1 : 1;
+		if (board.turn==0) side = 0;
+		if (!watching && data.players.length > 1) {
+			for (let i in data.players) {
+				if (data.players[i]!=username) {
+					opponent = data.players[i];
+					oppoName.innerHTML = opponent;
+				}
+			}
+		}
+		if (side!=0) {
+			if (side==-1) {
+				mySide.classList.add("black");
+				oppoSide.classList.add("white");
+			} else {
+				mySide.classList.add("white");
+				oppoSide.classList.add("black");
+			}
+			if (lock) {
+				mySide.classList.remove("blink");
+				oppoSide.classList.add("blink");
+			} else {
+				mySide.classList.add("blink");
+				oppoSide.classList.remove("blink");
+			}
+				
+		}
 		if (data.status != 0) {
+			mySide.classList.remove("blink");
+			oppoSide.classList.remove("blink");
 			var temp = '';
 			if (data.conceder)
 				if (data.conceder === username)
@@ -307,14 +337,6 @@ const updateBoard = data => {
 			var winner = (data.status==-1)? 'Black' : 'White';
 			alert(temp + winner + ' wins.');
 			lock = true;
-		}
-		if (!watching && data.players.length > 1) {
-			for (let i in data.players) {
-				if (data.players[i]!=username) {
-					opponent = data.players[i];
-					oppoName.innerHTML = opponent;
-				}
-			}
 		}
 		/*
 		if (watching) {
@@ -329,6 +351,8 @@ const updateBoard = data => {
 		board.clearBoard();
 		board.load(data.pieces);
 		if (data.status != 0) {
+			mySide.classList.remove("blink");
+			oppoSide.classList.remove("blink");
 			var temp = '';
 			if (data.conceder)
 				temp += data.conceder + ' conceded.\n<br />';
@@ -347,8 +371,10 @@ const updateBoard = data => {
 var uiDiv = document.getElementById("uiDiv");
 var myInfo = document.getElementById("myInfo");
 var myName = document.getElementById("myName");
+var mySide = document.getElementById("mySide");
 var oppoInfo = document.getElementById("oppoInfo");
 var oppoName = document.getElementById("oppoName");
+var oppoSide = document.getElementById("oppoSide");
 var undo = document.getElementById("undo");
 var concede = document.getElementById("concede");
 var undoremain = document.getElementById("undoremain");
@@ -561,6 +587,7 @@ $signUpName.click(() => {
 // client
 var p = undefined;
 var gid = -1;
+var side;
 socket.on('signUpResponse', (data) => {
 	if (data.success){
 		$('#signUpDiv').fadeOut('slow');

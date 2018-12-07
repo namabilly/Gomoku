@@ -203,6 +203,7 @@ button.gameRoom {
 	min-height: 700px;
 	min-width: 100px;
 	text-align: center;
+	background-color: rgb(240,240,240);
 }
 
 .info {
@@ -265,6 +266,54 @@ button.gameRoom {
 	color: white;
 	font-size: 15px;
 	font-weight: 600;
+}
+
+.sidepiece {
+	border-radius: 50%;
+	height: 43px;
+	width: 43px;
+	text-align: center;
+	margin: auto;
+	margin-top: 13px;
+	margin-bottom: 14px;
+}
+
+.black {
+	background-color: black;
+}
+
+.white {
+	background-color: white;
+}
+
+@-webkit-keyframes blinker {
+	0% {
+		opacity: 1.0;
+	}
+	50% {
+		opacity: 0.0;
+	}
+	100% {
+		opacity: 1.0;
+	}
+}
+
+@-moz-keyframes blinker {
+	0% {
+		opacity: 1.0;
+	}
+	50% {
+		opacity: 0.0;
+	}
+	100% {
+		opacity: 1.0;
+	}
+}
+
+.blink {
+	-webkit-animation: blinker 1s infinite;
+	-moz-animation: blinker 1s infinite;
+	animation: blinker 1s infinite;
 }
 
 /* Pages */
