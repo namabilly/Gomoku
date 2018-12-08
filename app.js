@@ -225,6 +225,9 @@ class Game {
 			Game.list[GAME_ID-1].join(player);
 			player.game = GAME_ID-1;
 		} else {
+			for (let i in game.players) {
+				player.side = -Player.list[game.players[i]].side;
+			}
 			game.join(player);
 			player.game = GAME_ID-1;
 		}
@@ -274,8 +277,8 @@ class Player {
 	}
 	update(){
 		// lock
-		if (this.game!=undefined&&this.side!=0) {
-			this.lock = ((Game.list[this.game].turn%2)*2-1 != this.side);
+		if (this.game!==undefined&&this.side!==0) {
+			this.lock = ((Game.list[this.game].turn%2)*2-1 !== this.side);
 		}
 	}
 	static update(){
@@ -560,7 +563,29 @@ io.sockets.on('connection', function (socket) {
 	});
 	
 	socket.on('update', data => {
-		var game = Game.list[data.id];
+		// get Player
+		var p = Player.list[socket.name];
+		if (!p) {
+			socket.emit('err', {
+				msg: 'Player does not exist.'
+			});
+			return;
+		}
+		// get Game
+		if (p.game===undefined) {
+			socket.emit('err', {
+				msg: 'No game joined.'
+			});
+			return;
+		}
+		var game = Game.list[p.game];
+		if (game===undefined) {
+			socket.emit('err', {
+				msg: 'Game does not exist.'
+			});
+			return;
+		}
+		// update
 		game.update();
 	});
 	
