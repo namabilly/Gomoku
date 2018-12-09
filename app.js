@@ -214,6 +214,22 @@ class Game {
 		}
 		return 0;
 	}
+	restart(){
+		this.pieces = [];
+		this.turn = 0;
+		this.status = 0;
+		this.conceder = undefined;
+		this.update();
+	}
+	reset(){
+		this.players = [];
+		this.num_of_players = 0;
+		this.spectators = [];
+		this.pieces = [];
+		this.turn = 0;
+		this.status = 0;
+		this.conceder = undefined;
+	}
 	static join(player){
 		var game = Game.list[GAME_ID-1];
 		if (!game) {
@@ -560,6 +576,32 @@ io.sockets.on('connection', function (socket) {
 		game.status = - p.side;
 		game.conceder = data.name;
 		game.update();
+	});
+	
+	socket.on('rematch', data => {
+		// get Player
+		var p = Player.list[socket.name];
+		if (!p) {
+			socket.emit('err', {
+				msg: 'Player does not exist.'
+			});
+			return;
+		}
+		// get Game
+		if (p.game===undefined) {
+			socket.emit('err', {
+				msg: 'No game joined.'
+			});
+			return;
+		}
+		var game = Game.list[p.game];
+		if (game===undefined) {
+			socket.emit('err', {
+				msg: 'Game does not exist.'
+			});
+			return;
+		}
+		game.restart();
 	});
 	
 	socket.on('update', data => {
