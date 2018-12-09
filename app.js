@@ -574,7 +574,7 @@ io.sockets.on('connection', function (socket) {
 		}
 		// concede
 		game.status = - p.side;
-		game.conceder = data.name;
+		game.conceder = socket.name;
 		game.update();
 	});
 	
