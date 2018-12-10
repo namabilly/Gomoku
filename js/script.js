@@ -16,15 +16,19 @@ const signUp = () => {
 
 
 // rooms
-var watchbtn = document.getElementById("watch");
+var watch = document.getElementById("watch");
 var roomDiv = document.getElementById("roomDiv");
-var back = document.createElement("BUTTON");
-back.innerHTML = "Return";
-back.classList.add("btn");
-back.classList.add("btn-primary");
+var back = document.createElement("a");
+//back.innerHTML = "";
+//back.classList.add("btn");
+//back.classList.add("btn-primary");
 back.classList.add("back");
+back.href = "#";
+var inback = document.createElement("a");
+inback.href = "#";
+back.appendChild(inback);
 
-watchbtn.onclick = () => {
+watch.onclick = () => {
 	socket.emit('getCurrentGames', {});
 };
 
@@ -32,7 +36,8 @@ const goBack = () => {
 	while (roomDiv.firstChild) {
 		roomDiv.removeChild(roomDiv.firstChild);
 	}
-	roomDiv.style.display = "none";
+	roomDiv.style.width = "0px";
+	roomDiv.style.paddingLeft = "0px";
 };
 
 back.onclick = goBack;
@@ -58,7 +63,8 @@ const showRooms = (data) => {
 	}
 	roomDiv.appendChild(list);
 	roomDiv.appendChild(back);
-	roomDiv.style.display = "block";
+	roomDiv.style.width = "100%";
+	roomDiv.style.paddingLeft = "40px";
 }
 
 const watchGame = (id) => {
@@ -396,8 +402,14 @@ const updateTime = data => {
 	if (min < 10) {
 		min = '0' + min;
 	}
+	if (min < 0) {
+		min = '00';
+	}
 	if (sec < 10) {
 		sec = '0' + sec;
+	}
+	if (sec < 0) {
+		sec = '00';
 	}
 	gt.innerHTML = min + ' : ' + sec;
 };
@@ -444,6 +456,10 @@ concede.onclick = function(data, e){
 const doConcede = () => {
 	socket.emit('concede', {});
 }
+
+// nav
+var navBar = document.getElementsByClassName("navBar")[0];
+
 
 // dialog
 var dialogoverlay = document.getElementById("dialogoverlay");
@@ -621,6 +637,7 @@ socket.on('signUpResponse', (data) => {
 	if (data.success){
 		$('#signUpDiv').fadeOut('slow');
 		$currentInput = $inputMessage.focus();
+		navBar.style.display = 'inline-block';
 		p = new Player(data.username);
 		username = data.username;
 		connected = true;
@@ -645,7 +662,7 @@ socket.on('joinGameResponse', (data) => {
 	if (data.success){
 		myName.innerHTML = username;
 		gid = data.id;
-		uiDiv.style.display = "inline-block";
+		uiDiv.style.display = 'inline-block';
 		board.clearBoard();
 	}
 	else {

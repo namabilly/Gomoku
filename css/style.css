@@ -151,17 +151,18 @@ button.no:active {
 /* Selection */
 
 #roomDiv {
-	display: none;
 	position: fixed;
 	opacity: 0.99;
 	top: 0px;
-	left: 0px;
+	right: 0px;
 	background: #223344;
 	height: 100%;
-	width: 100%;
+	width: 0px;
 	text-align: center;
 	vertical-align: center;
+	overflow: hidden;
 	z-index: 5;
+	transition: .5s;
 }
 
 #roomDiv > ul {
@@ -185,12 +186,38 @@ button.gameRoom {
 }
 
 .back {
+	/*
 	position: fixed;
 	right: 20px;
 	bottom: 20px;
 	height: 40px;
 	width: 100px;
 	z-index: 5;
+	*/
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	height: 100%;
+	width: 40px;
+	transition: .3s;
+}
+
+.back a {
+	position: absolute;
+	top: 50%;
+	left: -12px;
+	margin: 0;
+	text-decoration: none;
+	width: 40px;
+	height: 40px;
+	border-bottom: 4px solid #778899;
+	border-left: 4px solid #778899;
+	transform: rotate(-135deg);
+	transition: .3s;
+}
+
+.back:hover {
+	background: #AABBCC;
 }
 
 /* UI */
@@ -202,6 +229,8 @@ button.gameRoom {
 	width: 100%;
 	min-height: 700px;
 	min-width: 100px;
+	transition: .5s;
+	overflow: hidden;
 	text-align: center;
 	background-color: rgb(240,240,240);
 }
@@ -348,6 +377,41 @@ button.gameRoom {
 	-webkit-animation: blinker 1s infinite;
 	-moz-animation: blinker 1s infinite;
 	animation: blinker 1s infinite;
+}
+
+/* Menu */
+
+.navBar {
+	display: none;
+	position: fixed;
+	height: 100%;
+	width: 20px;
+	top: 0;
+	left: 0;
+	z-index: 5;
+	transition: .5s;
+	overflow: hidden;
+	padding-top: 100px;
+	background-color: #111;
+	opacity: 0.9;
+}
+
+.navBar a {
+	display: block;
+	padding: 10px 10px 10px 40px;
+	text-decoration: none;
+	font-size: 30px;
+	color: #778899;
+	transition: .3s;
+}
+
+.navBar:hover {
+	width: 200px;
+}
+
+.navBar a:hover, .offcanvas a:focus {
+	color: #AABBCC;
+	background-color: #223344;
 }
 
 /* Pages */
