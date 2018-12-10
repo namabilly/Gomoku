@@ -387,6 +387,20 @@ const updateBoard = data => {
 	
 };
 
+const updateTime = data => {
+	var time = data.time;
+	time = time/1000;
+	time = Math.floor(time);
+	var min = Math.floor(time/60);
+	var sec = time%60;
+	if (min < 10) {
+		min = '0' + min;
+	}
+	if (sec < 10) {
+		sec = '0' + sec;
+	}
+	gt.innerHTML = min + ' : ' + sec;
+};
 
 // game ui
 var uiDiv = document.getElementById("uiDiv");
@@ -396,6 +410,7 @@ var mySide = document.getElementById("mySide");
 var oppoInfo = document.getElementById("oppoInfo");
 var oppoName = document.getElementById("oppoName");
 var oppoSide = document.getElementById("oppoSide");
+var gt = document.getElementById("gametime");
 var undo = document.getElementById("undo");
 var concede = document.getElementById("concede");
 var undoremain = document.getElementById("undoremain");
@@ -675,6 +690,10 @@ socket.on('playerReconnected', (data) => {
 
 socket.on('updateBoard', (data) => {
 	updateBoard(data);
+});
+
+socket.on('updateTime', (data) => {
+	updateTime(data);
 });
 
 socket.on('newMessage', (data) => {

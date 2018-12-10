@@ -208,27 +208,58 @@ button.gameRoom {
 
 .info {
 	top: 50%;
-	left: 50%;
 	height: 45%;
-	width: auto;
-	max-height: 100%;
+	width: 100px;
+	max-height: 45%;
 	max-width: 100%;
 	margin: auto;
 	text-align: center;
+	overflow: hidden;
+}
+
+#myInfo {
+	position: absolute;
+	top: 0%;
+}
+
+#oppoInfo {
+	position: absolute;
+	top: 55%;
+}
+
+#myName {
+	max-height: 100px;
+	overflow: hidden;
+}
+
+#oppoName {
+	max-height: 100px;
+	overflow: hidden;
 }
 
 .break {
 	
 }
 
+.gametime {
+	position: absolute;
+	height: 5%;
+	top: 45%;
+	width: 100%;
+	margin: auto;
+	overflow: hidden;
+}
+
 .undo {
+	position: absolute;
+	top: 50%;
+	left: 10%;
 	background-image: url('/img/undo.png');
 	background-size: 30px 30px;
 	background-repeat: no-repeat;
 	background-position: center;
 	background-color: Transparent;
 	cursor: pointer;
-	overflow: hidden;
 	outline: none;
 	height: 30px;
 	width: 40px;
@@ -239,13 +270,15 @@ button.gameRoom {
 }
 
 .concede {
+	position: absolute;
+	top: 50%;
+	right: 10%;
 	background-image: url('/img/concede.png');
 	background-size: 30px 30px;
 	background-repeat: no-repeat;
 	background-position: center;
 	background-color: Transparent;
 	cursor: pointer;
-	overflow: hidden;
 	outline: none;
 	height: 30px;
 	width: 40px;
@@ -256,16 +289,17 @@ button.gameRoom {
 }
 
 .num {
-	position: absolute;
+	position: relative;
 	background-color: #DD2222;
-	top: 355px;
-	left: 33px;
+	top: -14px;/*355px;*/
+	left: 11px; /*33*/
 	height: 20px;
 	width: 20px;
 	border-radius: 10px;
 	color: white;
 	font-size: 15px;
 	font-weight: 600;
+	display: block;
 }
 
 .sidepiece {

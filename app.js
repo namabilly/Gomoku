@@ -2,6 +2,9 @@ var express = require('express');
 var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
+const AI_MM = require('AI-MM');
+var AI_MM_ID = 0;
+//const ai_mm = new AI_MM('AI-MM');
 
 server.listen(process.env.PORT || 3000);
 console.log('server started');
@@ -29,6 +32,10 @@ class Game {
 		Game.list[this.id] = this;
 		this.status = 0; // -1 black, 1 white
 		this.conceder = undefined; // the one who concedes
+		this.create_time = Date.now();
+		this.time_limit = 300000;
+		this.time_left = this.time_limit;
+		this.timeUpdate();
 	}
 	join(player){
 		if (this.isFull()) {
@@ -107,6 +114,30 @@ class Game {
 					conceder: this.conceder
 				});
 			}
+		}
+	}
+	timeUpdate(){
+		var that = this;
+		var tick = setTimeout(function(){
+			if (that.time_left <= 0) {
+				clearTimeout(tick);
+				Game.endGame(that.id);
+				return;
+			}
+			that.time_left = that.time_limit - (Date.now() - that.create_time);
+			//console.log(that.time_left);
+			for (let i in that.players) {
+				var p = Player.list[that.players[i]];
+				p.socket.emit('updateTime', {time: that.time_left});
+			}
+			for (let i in that.spectators) {
+				var p = Player.list[that.spectators[i]];
+				p.socket.emit('updateTime', {time: that.time_left});
+			}
+			that.timeUpdate();
+		}, 1000);
+		if (that.time_left <= 0) {
+			Game.endGame(this.id);
 		}
 	}
 	isFull(){
@@ -220,8 +251,16 @@ class Game {
 		this.status = 0;
 		this.conceder = undefined;
 		this.update();
+		this.create_time = Date.now();
+		this.time_limit = 300000;
+		this.time_left = this.time_limit;
+		this.timeUpdate();
 	}
 	reset(){
+		for (let i in this.players) {
+			var p = Player.list[this.players[i]];
+			p.game = undefined;
+		}
 		this.players = [];
 		this.num_of_players = 0;
 		this.spectators = [];
@@ -229,6 +268,10 @@ class Game {
 		this.turn = 0;
 		this.status = 0;
 		this.conceder = undefined;
+		this.create_time = Date.now();
+		this.time_limit = 300000;
+		this.time_left = this.time_limit;
+		this.timeUpdate();
 	}
 	static join(player){
 		var game = Game.list[GAME_ID-1];
@@ -266,6 +309,13 @@ class Game {
 		return games;
 	}
 	static endGame(id){
+		if (id===0) {
+			Game.list[id].reset();
+			console.log('0 reset.');
+			return;
+		}
+		if (Game.list[id])
+			Game.list[id].time_left = 0;
 		delete Game.list[id];
 		console.log('Game 10' + id + ' ended.')
 	}
@@ -388,8 +438,38 @@ io.sockets.on('connection', function (socket) {
 	});
 	
 	socket.on('joinGame', data => {
-		var p = Player.list[data.name];
-		if (p.game!=undefined) {
+		// get Player
+		var p = Player.list[socket.name];
+		if (!p) {
+			socket.emit('err', {
+				msg: 'Player does not exist.'
+			});
+			return;
+		}
+		if (data.id!==undefined) {
+			// check that game exists
+			var game = Game.list[id];	
+			if (game===undefined) {
+				socket.emit('err', {
+					msg: 'Game does not exist.'
+				});
+				return;
+			}
+			if (game.isFull()) {
+				socket.emit('err', {
+					msg: 'Game already full.'
+				});
+				return;
+			}
+			if (p.game!==undefined) {
+				var pregame = Game.list[p.game];
+				if (pregame) {
+					pregame.removePlayer(p);
+				}
+			}
+			game.join(p);
+		}
+		if (p.game!==undefined) {
 			socket.emit('joinGameResponse', {
 				success: true,
 				id: p.game
@@ -427,6 +507,48 @@ io.sockets.on('connection', function (socket) {
 			p.game = data.id;
 		}
 		game.update();
+	});
+	// not ready
+	socket.on('addAI', data => {
+		// get Player
+		var p = Player.list[socket.name];
+		if (!p) {
+			socket.emit('err', {
+				msg: 'Player does not exist.'
+			});
+			return;
+		}
+		// get Game
+		if (p.game===undefined) {
+			socket.emit('err', {
+				msg: 'No game joined.'
+			});
+			return;
+		}
+		var game = Game.list[p.game];
+		if (game===undefined) {
+			socket.emit('err', {
+				msg: 'Game does not exist.'
+			});
+			return;
+		}
+		// check game status
+		if (game.status !== 0) {
+			socket.emit('err', {
+				msg: 'Game ended.'
+			});
+			return;
+		}
+		if (game.players.length >= 2) {
+			socket.emit('err', {
+				msg: 'Player already exists.'
+			});
+			return;
+		}
+		console.log('ai added.');
+		let ai = new AI_MM('AI-MM' + AI_MM_ID++);
+		ai.connect(game);
+		ai.run();
 	});
 	
 	socket.on('put', data => {
@@ -644,6 +766,25 @@ io.sockets.on('connection', function (socket) {
 			username: socket.name,
 			message: data
 		});
+		
+		// interesting features
+		// get Player
+		var p = Player.list[socket.name];
+		if (!p) {
+			return;
+		}
+		// get Game
+		if (p.game===undefined) {
+			return;
+		}
+		var game = Game.list[p.game];
+		if (game===undefined) {
+			return;
+		}
+		if (data==='+1s') {
+			game.create_time += 1000;
+		}
+		
 	});
 	
 	socket.on('error', () => {});
