@@ -29,6 +29,7 @@ inback.href = "#";
 back.appendChild(inback);
 
 watch.onclick = () => {
+	goBack();
 	socket.emit('getCurrentGames', {});
 };
 
@@ -53,7 +54,7 @@ const showRooms = (data) => {
 		btn.classList.add("btn");
 		btn.classList.add("btn-primary");
 		btn.classList.add("gameRoom");
-		var info = document.createTextNode("10" + games[i]);
+		var info = document.createTextNode(100 + games[i] + "");
 		btn.appendChild(info)
 		btn.onclick = () => {
 			watchGame(games[i]);
