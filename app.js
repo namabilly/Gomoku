@@ -474,6 +474,12 @@ io.sockets.on('connection', function (socket) {
 		// check piece position
 		var x = data.position.x,
 			y = data.position.y;
+		if (x===undefined||y===undefined) {
+			socket.emit('err', {
+				msg: 'Put failed. Position undefined.'
+			});
+			return;
+		}
 		if (x < 0 || x >= SIZE.x || y < 0 || y >= SIZE.y) {
 			socket.emit('err', {
 				msg: 'Put failed. Position out of bound.'
