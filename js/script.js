@@ -396,6 +396,7 @@ const updateBoard = data => {
 
 const updateTime = data => {
 	var time = data.time;
+	if(time < 0) time = 0;
 	time = time/1000;
 	time = Math.floor(time);
 	var min = Math.floor(time/60);
@@ -403,14 +404,8 @@ const updateTime = data => {
 	if (min < 10) {
 		min = '0' + min;
 	}
-	if (min < 0) {
-		min = '00';
-	}
 	if (sec < 10) {
 		sec = '0' + sec;
-	}
-	if (sec < 0) {
-		sec = '00';
 	}
 	gt.innerHTML = min + ' : ' + sec;
 };
