@@ -17,7 +17,9 @@ const signUp = () => {
 
 // rooms
 var watch = document.getElementById("watch");
+var play = document.getElementById("play");
 var roomDiv = document.getElementById("roomDiv");
+var mode = '';
 var back = document.createElement("a");
 //back.innerHTML = "";
 //back.classList.add("btn");
@@ -30,6 +32,13 @@ back.appendChild(inback);
 
 watch.onclick = () => {
 	goBack();
+	mode = 'watch';
+	socket.emit('getCurrentGames', {});
+};
+
+play.onclick = () => {
+	goBack();
+	mode = 'join';
 	socket.emit('getCurrentGames', {});
 };
 
@@ -39,6 +48,7 @@ const goBack = () => {
 	}
 	roomDiv.style.width = "0px";
 	roomDiv.style.paddingLeft = "0px";
+	mode = '';
 };
 
 back.onclick = goBack;
@@ -55,10 +65,15 @@ const showRooms = (data) => {
 		btn.classList.add("btn-primary");
 		btn.classList.add("gameRoom");
 		var info = document.createTextNode(100 + games[i] + "");
-		btn.appendChild(info)
-		btn.onclick = () => {
-			watchGame(games[i]);
-		};
+		btn.appendChild(info);
+		if (mode === 'join')
+			btn.onclick = () => {
+				joinGame(game[i]);
+			}
+		else if (mode === 'watch')
+			btn.onclick = () => {
+				watchGame(games[i]);
+			};		
 		node.appendChild(btn);
 		list.appendChild(node);
 	}
@@ -66,6 +81,7 @@ const showRooms = (data) => {
 	roomDiv.appendChild(back);
 	roomDiv.style.width = "100%";
 	roomDiv.style.paddingLeft = "40px";
+	
 }
 
 const watchGame = (id) => {
@@ -75,6 +91,14 @@ const watchGame = (id) => {
 	});
 	goBack();
 }
+
+const joinGame = (id) => {
+	socket.emit('joinGame', {
+		id: id
+	});
+	goBack();
+}
+
 
 // game
 class Board {
@@ -356,7 +380,7 @@ const updateBoard = data => {
 		lock = data.lock;
 		board.clearBoard();
 		board.load(data.pieces);
-		myName.innerHTML = data.players.shift();
+		myName.innerHTML = data.players.shift() || "";
 		oppoName.innerHTML = data.players.shift() || "";
 		var myside = data.sides.shift();
 		if (myside===-1) {
@@ -658,6 +682,7 @@ socket.on('joinGameResponse', (data) => {
 	if (data.success){
 		myName.innerHTML = username;
 		gid = data.id;
+		watching = false;
 		uiDiv.style.display = 'inline-block';
 		board.clearBoard();
 	}

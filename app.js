@@ -404,7 +404,8 @@ io.sockets.on('connection', function (socket) {
 			console.log('One disconnection');
 		}
 	});
-	
+	// sign up - create player
+	// reconnect if disconnected
 	socket.on('signUp', data => {
 		data.name = data.name.trim();
 		if (!data.name || data.name.length == 0)
@@ -446,36 +447,64 @@ io.sockets.on('connection', function (socket) {
 			});
 			return;
 		}
+		if (!data) data = [];
+		// if given game id
 		if (data.id!==undefined) {
 			// check that game exists
-			var game = Game.list[id];	
+			var game = Game.list[data.id];	
 			if (game===undefined) {
 				socket.emit('err', {
 					msg: 'Game does not exist.'
 				});
 				return;
 			}
+			// check game not full
 			if (game.isFull()) {
 				socket.emit('err', {
 					msg: 'Game already full.'
 				});
 				return;
 			}
+			// check game status
+			if (game.status!==0) {
+				socket.emit('err', {
+					msg: 'Game already ended.'
+				});
+				return;
+			}
+			// remove from previous game
 			if (p.game!==undefined) {
+				// if same game
+				if (p.game===data.id) {
+					socket.emit('err', {
+						msg: 'Already in game.'
+					});
+					return;
+				}
 				var pregame = Game.list[p.game];
 				if (pregame) {
 					pregame.removePlayer(p);
+					pregame.removeSpectator(p);
 				}
 			}
+			// join game
 			game.join(p);
-		}
-		if (p.game!==undefined) {
 			socket.emit('joinGameResponse', {
 				success: true,
 				id: p.game
 			});
 			Game.list[p.game].update();
 		}
+		// if id not given
+		// if previous game exists
+		else if (p.game!==undefined) {
+			socket.emit('joinGameResponse', {
+				success: true,
+				id: p.game
+			});
+			Game.list[p.game].update();
+		}
+		// system assignment
 		else
 			p.joinGame();
 	});
