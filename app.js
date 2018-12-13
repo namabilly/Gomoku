@@ -45,7 +45,11 @@ class Game {
 		this.players.push(player.name);
 		this.num_of_players++;
 		console.log('Joined game 10' + this.id + ' successfully.');
-		return 0;
+		player.socket.emit('joinGameResponse', {
+			success: true,
+			id: this.id,
+			players: this.players
+		});
 	}
 	watch(player){
 		this.spectators.push(player.name);
@@ -347,6 +351,11 @@ class Player {
 			this.lock = ((Game.list[this.game].turn%2)*2-1 !== this.side);
 		}
 	}
+	reset(){
+		this.lock = false;
+		this.side = 0;
+		this.watching = false;
+	}
 	static update(){
 		for (let name in Player.list) {
 			Player.list[name].update(); 
@@ -483,16 +492,20 @@ io.sockets.on('connection', function (socket) {
 				}
 				var pregame = Game.list[p.game];
 				if (pregame) {
-					pregame.removePlayer(p);
-					pregame.removeSpectator(p);
+					pregame.removePlayer(p.name);
+					pregame.removeSpectator(p.name);
 				}
 			}
 			// join game
+			p.reset();
 			game.join(p);
+			p.game = data.id;
+			/*
 			socket.emit('joinGameResponse', {
 				success: true,
 				id: p.game
 			});
+			*/
 			Game.list[p.game].update();
 		}
 		// if id not given
