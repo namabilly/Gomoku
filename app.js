@@ -517,9 +517,25 @@ io.sockets.on('connection', function (socket) {
 	})
 	
 	socket.on('watchGame', data => {
+		// get Player
+		var p = Player.list[socket.name];
+		if (!p) {
+			socket.emit('err', {
+				msg: 'Player does not exist.'
+			});
+			return;
+		}
+		// check data
+		if (!data) data = [];
+		// get Game
 		var game = Game.list[data.id];
-		var p = Player.list[data.name];
-		if (data.id == p.game) {
+		if (game===undefined) {
+			socket.emit('err', {
+				msg: 'Game does not exist.'
+			});
+			return;
+		}
+		if (data.id === p.game) {
 			socket.emit('err', {
 				msg: 'Cannot watch your own game!'
 			});
@@ -528,7 +544,7 @@ io.sockets.on('connection', function (socket) {
 		if (game) {
 			game.watch(p);
 			p.watching = true;
-			if (p.game!=undefined) {
+			if (p.game!==undefined) {
 				var g = Game.list[p.game];
 				g.removePlayer(p.name);
 				g.removeSpectator(p.name);

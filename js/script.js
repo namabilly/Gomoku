@@ -86,7 +86,6 @@ const showRooms = (data) => {
 
 const watchGame = (id) => {
 	socket.emit('watchGame', {
-		name: username,
 		id: id
 	});
 	goBack();
