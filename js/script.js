@@ -68,8 +68,8 @@ const showRooms = (data) => {
 		btn.appendChild(info);
 		if (mode === 'join')
 			btn.onclick = () => {
-				joinGame(game[i]);
-			}
+				joinGame(games[i]);
+			};
 		else if (mode === 'watch')
 			btn.onclick = () => {
 				watchGame(games[i]);

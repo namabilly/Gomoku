@@ -437,7 +437,7 @@ io.sockets.on('connection', function (socket) {
 			});
 		}
 	});
-	
+	// join game
 	socket.on('joinGame', data => {
 		// get Player
 		var p = Player.list[socket.name];
@@ -508,14 +508,14 @@ io.sockets.on('connection', function (socket) {
 		else
 			p.joinGame();
 	});
-	
+	// get game list
 	socket.on('getCurrentGames', data => {
 		var games = Game.getGames();
 		socket.emit('currentGames', {
 			games: games
 		});
 	})
-	
+	// watch game
 	socket.on('watchGame', data => {
 		// get Player
 		var p = Player.list[socket.name];
@@ -529,29 +529,31 @@ io.sockets.on('connection', function (socket) {
 		if (!data) data = [];
 		// get Game
 		var game = Game.list[data.id];
-		if (game===undefined) {
+		if (game === undefined) {
 			socket.emit('err', {
 				msg: 'Game does not exist.'
 			});
 			return;
 		}
+		// if same game
 		if (data.id === p.game) {
 			socket.emit('err', {
 				msg: 'Cannot watch your own game!'
 			});
 			return;
 		}
+		// watch game
 		if (game) {
 			game.watch(p);
 			p.watching = true;
-			if (p.game!==undefined) {
+			if (p.game !== undefined) {
 				var g = Game.list[p.game];
 				g.removePlayer(p.name);
 				g.removeSpectator(p.name);
 			}
 			p.game = data.id;
+			game.update();
 		}
-		game.update();
 	});
 	// not ready
 	socket.on('addAI', data => {
