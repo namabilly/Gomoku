@@ -661,16 +661,18 @@ socket.on('signUpResponse', (data) => {
 		$('#signUpDiv').fadeOut('slow');
 		$currentInput = $inputMessage.focus();
 		navBar.style.display = 'inline-block';
-		p = new Player(data.username);
 		username = data.username;
 		connected = true;
-		if (data.id!=undefined) {
+		if (data.id !== undefined) {
 			gid = data.id;
 		}
-		if (data.watching) watching = true;
-		socket.emit('joinGame', {
-			name: username
-		});
+		if (data.watching){
+			watching = true;
+			uiDiv.style.display = 'inline-block';
+		}
+		else {
+			socket.emit('joinGame');
+		}
 		log('Welcome to Gomoku');
 		setTimeout(function(){
 			document.getElementById('chatbtn').click();

@@ -488,6 +488,10 @@ io.sockets.on('connection', function (socket) {
 					id: p.game,
 					watching: p.watching
 				});
+				if (p.game !== undefined) {
+					var game = Game.list[p.game];
+					if (game) game.update();
+				}
 			}
 			// name exists
 			else
