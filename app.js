@@ -516,10 +516,10 @@ io.sockets.on('connection', function (socket) {
 		}
 		if (!data) data = [];
 		// if given game id
-		if (data.id!==undefined) {
+		if (data.id !== undefined) {
 			// check that game exists
 			var game = Game.list[data.id];	
-			if (game===undefined) {
+			if (game === undefined) {
 				socket.emit('err', {
 					msg: 'Game does not exist.'
 				});
@@ -533,20 +533,27 @@ io.sockets.on('connection', function (socket) {
 				return;
 			}
 			// check game status
-			if (game.status!==0) {
+			if (game.status !== 0) {
 				socket.emit('err', {
 					msg: 'Game already ended.'
 				});
 				return;
 			}
 			// previous game exists
-			if (p.game!==undefined) {
+			if (p.game !== undefined) {
 				// if same game
-				if (p.game===data.id) {
-					socket.emit('err', {
-						msg: 'Already in game.'
-					});
-					return;
+				if (p.game === data.id) {
+					// if watching
+					if (p.watching) {
+						p.watching = false;
+					}
+					// not watching - already playing
+					else {
+						socket.emit('err', {
+							msg: 'Already in game.'
+						});
+						return;
+					}
 				}
 				// remove from previous game
 				var pregame = Game.list[p.game];
@@ -603,10 +610,13 @@ io.sockets.on('connection', function (socket) {
 		}
 		// if same game
 		if (data.id === p.game) {
-			socket.emit('err', {
-				msg: 'Cannot watch your own game!'
-			});
-			return;
+			// already watching
+			if (p.watching) {
+				socket.emit('err', {
+					msg: 'Cannot watch your own game!'
+				});
+				return;
+			}
 		}
 		// watch game
 		if (game) {
