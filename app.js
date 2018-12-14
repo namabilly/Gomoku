@@ -2,8 +2,8 @@ var express = require('express');
 var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
-const AI_MM = require('AI-MM');
-var AI_MM_ID = 0;
+//const AI_MM = require('AI-MM');
+//var AI_MM_ID = 0;
 //const ai_mm = new AI_MM('AI-MM');
 
 server.listen(process.env.PORT || 3000);
@@ -17,8 +17,8 @@ app.use('/css', express.static(__dirname + '/css'));
 app.use('/img', express.static(__dirname + '/img'));
 
 GAME_ID = 0;
-PLAYER_ID = 0;
-SIZE = {x:15, y:15};
+//PLAYER_ID = 0;
+const SIZE = {x:15, y:15};
 
 class Game {
 	constructor(size){
@@ -29,41 +29,50 @@ class Game {
 		this.spectators = [];
 		this.pieces = [];
 		this.turn = 0;
-		Game.list[this.id] = this;
 		this.status = 0; // -1 black, 1 white
 		this.conceder = undefined; // the one who concedes
 		this.create_time = Date.now();
-		this.time_limit = 300000;
+		this.time_limit = 300000; // 5 min
 		this.time_left = this.time_limit;
 		this.timeUpdate();
+		Game.list[this.id] = this;
 	}
+	// player join game - by Player
 	join(player){
+		// game full
 		if (this.isFull()) {
 			console.log('Join failed, game full');
 			return 1;
 		}
+		// add player
 		this.players.push(player.name);
 		this.num_of_players++;
-		console.log('Joined game 10' + this.id + ' successfully.');
 		player.socket.emit('joinGameResponse', {
 			success: true,
 			id: this.id,
 			players: this.players
 		});
+		console.log('Joined game ' + (100+this.id) + ' successfully.');
+		return 0;
 	}
+	// player watch game - by Player
 	watch(player){
+		// add player
 		this.spectators.push(player.name);
-		console.log('Watching game 10' + this.id + '.');
 		player.socket.emit('watchGameResponse', {
 			success: true,
 			id: this.id,
 			players: this.players
 		});
+		console.log('Watching game ' + (100+this.id) + '.');
+		return 0;
 	}
+	// put piece - by Piece
 	put(piece){
 		this.pieces.push(piece);
 		this.turn++;
 	}
+	// undo - turn to be returned to
 	undo(turn){
 		for (let i in this.pieces) {
 			if (this.pieces[i].turn >= turn-1) {
@@ -71,8 +80,11 @@ class Game {
 			}
 		}
 	}
+	// update game
 	update(){
+		// check game status - if someone wins
 		if (this.status === 0) this.status = this.checkBoard();
+		// convert Piece to passable variables
 		var matrix = [];
 		this.turn = 0;
 		for (let i in this.pieces) {
@@ -86,6 +98,7 @@ class Game {
 			});
 			this.turn++;
 		}
+		// update players in game
 		for (let i in this.players) {
 			let p = Player.list[this.players[i]];
 			if (p) {
@@ -100,6 +113,7 @@ class Game {
 				});
 			}
 		}
+		// update spectators watching
 		for (let i in this.spectators) {
 			let p = Player.list[this.spectators[i]];
 			if (p) {
@@ -120,6 +134,7 @@ class Game {
 			}
 		}
 	}
+	// update time - once per sec
 	timeUpdate(){
 		var that = this;
 		var tick = setTimeout(function(){
@@ -144,9 +159,11 @@ class Game {
 			Game.endGame(this.id);
 		}
 	}
+	// check whether the game is full - 2 or more players
 	isFull(){
 		return this.num_of_players>=2;
 	}
+	// check whether a position has already been put
 	isInGame(position){
 		for (let i in this.pieces) {
 			var piece = this.pieces[i];
@@ -155,27 +172,7 @@ class Game {
 		}
 		return false;
 	}
-	removePlayer(name){
-		for (let i in this.players) {
-			if (this.players[i] === name) {
-				this.players.splice(i, 1);
-				this.num_of_players--;
-					if (this.num_of_players==0) {
-						Game.endGame(this.id);
-					}
-				break;
-			}
-		}
-		this.update();
-	}
-	removeSpectator(name){
-		for (let i in this.spectators) {
-			if (this.spectators[i] === name) {
-				this.spectators.splice(i, 1);
-				break;
-			}
-		}
-	}
+	// check game status - if anyone wins
 	checkBoard(){
 		var matrix = [];
 		for (let x=0;x<SIZE.x;x++) {
@@ -249,6 +246,30 @@ class Game {
 		}
 		return 0;
 	}
+	// remove player - by name
+	removePlayer(name){
+		for (let i in this.players) {
+			if (this.players[i] === name) {
+				this.players.splice(i, 1);
+				this.num_of_players--;
+				if (this.num_of_players==0) {
+					Game.endGame(this.id);
+				}
+				break;
+			}
+		}
+		this.update();
+	}
+	// remove spectator - by name
+	removeSpectator(name){
+		for (let i in this.spectators) {
+			if (this.spectators[i] === name) {
+				this.spectators.splice(i, 1);
+				break;
+			}
+		}
+	}
+	// restart the game *
 	restart(){
 		this.pieces = [];
 		this.turn = 0;
@@ -260,6 +281,7 @@ class Game {
 		this.time_left = this.time_limit;
 		this.timeUpdate();
 	}
+	// reset the game *
 	reset(){
 		for (let i in this.players) {
 			var p = Player.list[this.players[i]];
@@ -277,6 +299,7 @@ class Game {
 		this.time_left = this.time_limit;
 		this.timeUpdate();
 	}
+	// static - join - system assign game *
 	static join(player){
 		var game = Game.list[GAME_ID-1];
 		if (!game) {
@@ -294,17 +317,19 @@ class Game {
 			game.join(player);
 			player.game = GAME_ID-1;
 		}
-		console.log('Player ' + player.name + ' joined game 10' + (GAME_ID-1) + '.');
+		console.log('Player ' + player.name + ' joined game ' + (100+GAME_ID-1) + '.');
 		player.socket.emit('joinGameResponse', {
 			success: true,
 			id: GAME_ID-1
 		});
 		game.update();
 	}
+	// static - create game
 	static createGame(size){
 		new Game(size);
-		console.log('New game 10' + (GAME_ID-1) + ' created.');
+		console.log('New game ' + (100+GAME_ID-1) + ' created.');
 	}
+	// static - get all valid game ids
 	static getGames(){
 		var games = [];
 		for (let i in Game.list) {
@@ -312,8 +337,9 @@ class Game {
 		}
 		return games;
 	}
+	// static - end game - by id
 	static endGame(id){
-		if (id===0) {
+		if (id === 0) {
 			Game.list[id].reset();
 			console.log('0 reset.');
 			return;
@@ -321,7 +347,7 @@ class Game {
 		if (Game.list[id])
 			Game.list[id].time_left = 0;
 		delete Game.list[id];
-		console.log('Game 10' + id + ' ended.')
+		console.log('Game ' + (100+id) + ' ended.')
 	}
 	
 }
@@ -332,48 +358,57 @@ class Player {
 	constructor(socket){
 		this.name = socket.name; 
 		this.socket = socket;
-		this.id = PLAYER_ID++;
-		this.game = undefined;
-		this.color = undefined;
-		this.opponent = undefined;
+		this.game = undefined; // id
 		this.lock = false;
-		this.side = 0;
+		this.side = 0; // -1 black, 1 white
+		this.opponent = undefined;
 		this.watching = false;
 		this.isConnected = true;
 		Player.list[this.name] = this;
 	}
+	// join game *
 	joinGame(){
 		Game.join(this);
 	}
+	// update player info *
 	update(){
 		// lock
-		if (this.game!==undefined&&this.side!==0) {
+		if (this.game !== undefined && this.side !== 0) {
 			this.lock = ((Game.list[this.game].turn%2)*2-1 !== this.side);
 		}
 	}
+	// reset player info *
 	reset(){
 		this.lock = false;
 		this.side = 0;
 		this.watching = false;
 	}
+	// static - update all players *
 	static update(){
 		for (let name in Player.list) {
 			Player.list[name].update(); 
 		}
 	}
+	// static - create player - by name and socket
 	static addPlayer(name, socket){
 		Object.defineProperty(socket, 'name', {value:name});
 		new Player(socket);
 		console.log('New player ' + name + ' joined.');
 		socket.emit('signUpResponse', {success:true, username:name});
 	}
+	// static - remove player - by name
 	static removePlayer(name){
+		// find the game
 		var game = Game.list[Player.list[name].game];
-		game.removePlayer(name);
-		game.removeSpectator(name);
-		Player.list[name].socket.broadcast.emit('playerLeft', {
-			username: name
-		});
+		if (game) {
+			game.removePlayer(name);
+			game.removeSpectator(name);
+		}
+		if (Player.list[name]) {
+			Player.list[name].socket.broadcast.emit('playerLeft', {
+				username: name
+			});
+		}
 		delete Player.list[name];
 		console.log('Player ' + name + ' left.');
 	}
@@ -387,15 +422,13 @@ class Piece {
 		this.owner = player;
 		this.turn = turn;
 	}
-	put(){
-		
-	}
 }
 
 
 io.sockets.on('connection', function (socket) {
 	console.log('New Connection');
-	
+	// disconnect
+	// remove player if no attempt to reconnect
 	socket.on('disconnect', () => {
 		if (Player.list[socket.name]){
 			console.log('Player ' + socket.name + ' disconnected.');
@@ -416,9 +449,14 @@ io.sockets.on('connection', function (socket) {
 	// sign up - create player
 	// reconnect if disconnected
 	socket.on('signUp', data => {
+		// check data
+		if (!data) data = [];
+		// trim name
 		data.name = data.name.trim();
+		// invalid names
 		if (!data.name || data.name.length == 0)
 			socket.emit('signUpResponse', {success:false, msg:'Name invalid, empty name is not accepted.'}); 
+		// name exists
 		else if (data.name in Player.list)
 			// reconnect
 			if (!Player.list[data.name].isConnected){
@@ -437,8 +475,10 @@ io.sockets.on('connection', function (socket) {
 					watching: p.watching
 				});
 			}
+			// name exists
 			else
 				socket.emit('signUpResponse', {success:false, msg:'Name exists, please try another one.'}); 
+		// create player
 		else {
 			Player.addPlayer(data.name, socket); 
 			socket.broadcast.emit('playerJoined', {
@@ -481,7 +521,7 @@ io.sockets.on('connection', function (socket) {
 				});
 				return;
 			}
-			// remove from previous game
+			// previous game exists
 			if (p.game!==undefined) {
 				// if same game
 				if (p.game===data.id) {
@@ -490,6 +530,7 @@ io.sockets.on('connection', function (socket) {
 					});
 					return;
 				}
+				// remove from previous game
 				var pregame = Game.list[p.game];
 				if (pregame) {
 					pregame.removePlayer(p.name);
@@ -500,12 +541,6 @@ io.sockets.on('connection', function (socket) {
 			p.reset();
 			game.join(p);
 			p.game = data.id;
-			/*
-			socket.emit('joinGameResponse', {
-				success: true,
-				id: p.game
-			});
-			*/
 			Game.list[p.game].update();
 		}
 		// if id not given
@@ -568,8 +603,8 @@ io.sockets.on('connection', function (socket) {
 			game.update();
 		}
 	});
-	// not ready
-	socket.on('addAI', data => {
+	// not ready *
+	/*socket.on('addAI', data => {
 		// get Player
 		var p = Player.list[socket.name];
 		if (!p) {
@@ -609,8 +644,8 @@ io.sockets.on('connection', function (socket) {
 		let ai = new AI_MM('AI-MM' + AI_MM_ID++);
 		ai.connect(game);
 		ai.run();
-	});
-	
+	});*/
+	// put piece
 	socket.on('put', data => {
 		// get Player
 		var p = Player.list[socket.name];
@@ -621,14 +656,14 @@ io.sockets.on('connection', function (socket) {
 			return;
 		}
 		// get Game
-		if (p.game===undefined) {
+		if (p.game === undefined) {
 			socket.emit('err', {
 				msg: 'No game joined.'
 			});
 			return;
 		}
 		var game = Game.list[p.game];
-		if (game===undefined) {
+		if (game === undefined) {
 			socket.emit('err', {
 				msg: 'Game does not exist.'
 			});
@@ -653,10 +688,12 @@ io.sockets.on('connection', function (socket) {
 			});
 			return;
 		}
+		// check data
+		if (!data) data = [];
 		// check piece position
 		var x = data.position.x,
 			y = data.position.y;
-		if (x===undefined||y===undefined) {
+		if (x === undefined || y === undefined) {
 			socket.emit('err', {
 				msg: 'Put failed. Position undefined.'
 			});
@@ -680,7 +717,7 @@ io.sockets.on('connection', function (socket) {
 		p.lock = true;
 		game.update();
 	});
-	
+	// undo
 	socket.on('undo', data => {
 		// get Player
 		var p = Player.list[socket.name];
@@ -691,14 +728,14 @@ io.sockets.on('connection', function (socket) {
 			return;
 		}
 		// get Game
-		if (p.game===undefined) {
+		if (p.game === undefined) {
 			socket.emit('err', {
 				msg: 'No game joined.'
 			});
 			return;
 		}
 		var game = Game.list[p.game];
-		if (game===undefined) {
+		if (game === undefined) {
 			socket.emit('err', {
 				msg: 'Game does not exist.'
 			});
@@ -723,7 +760,7 @@ io.sockets.on('connection', function (socket) {
 		game.undo(turn);
 		game.update();
 	});
-	
+	// concede
 	socket.on('concede', data => {
 		// get Player
 		var p = Player.list[socket.name];
@@ -734,14 +771,14 @@ io.sockets.on('connection', function (socket) {
 			return;
 		}
 		// get Game
-		if (p.game===undefined) {
+		if (p.game === undefined) {
 			socket.emit('err', {
 				msg: 'No game joined.'
 			});
 			return;
 		}
 		var game = Game.list[p.game];
-		if (game===undefined) {
+		if (game === undefined) {
 			socket.emit('err', {
 				msg: 'Game does not exist.'
 			});
@@ -765,7 +802,7 @@ io.sockets.on('connection', function (socket) {
 		game.conceder = socket.name;
 		game.update();
 	});
-	
+	// not robust *
 	socket.on('rematch', data => {
 		// get Player
 		var p = Player.list[socket.name];
@@ -791,7 +828,7 @@ io.sockets.on('connection', function (socket) {
 		}
 		game.restart();
 	});
-	
+	// debug method update *
 	socket.on('update', data => {
 		// get Player
 		var p = Player.list[socket.name];
@@ -819,6 +856,7 @@ io.sockets.on('connection', function (socket) {
 		game.update();
 	});
 	
+	// chat content
 	// when the client emits 'newMessage', this listens and executes
 	socket.on('newMessage', (data) => {
 		// we tell the client to execute 'new message'
