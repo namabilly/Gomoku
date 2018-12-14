@@ -53,6 +53,11 @@ class Game {
 			players: this.players
 		});
 		console.log('Joined game ' + (100+this.id) + ' successfully.');
+		// set opponent
+		if (this.num_of_players === 2) {
+			Player.list[this.players[0]].opponent = this.players[1];
+			Player.list[this.players[1]].opponent = this.players[0];
+		}
 		return 0;
 	}
 	// player watch game - by Player
@@ -108,6 +113,7 @@ class Game {
 					pieces: matrix,
 					status: this.status,
 					players: this.players,
+					side: p.side,
 					lock: p.lock,
 					conceder: this.conceder
 				});
@@ -252,8 +258,12 @@ class Game {
 			if (this.players[i] === name) {
 				this.players.splice(i, 1);
 				this.num_of_players--;
-				if (this.num_of_players==0) {
+				if (this.num_of_players === 0) {
 					Game.endGame(this.id);
+				}
+				// opponent
+				else {
+					Player.list[this.players[0]].opponent = undefined;
 				}
 				break;
 			}
@@ -372,6 +382,10 @@ class Player {
 	}
 	// update player info *
 	update(){
+		// side
+		if (this.opponent && this.side === 0) {
+			this.side = -Player.list[this.opponent].side;
+		} 
 		// lock
 		if (this.game !== undefined && this.side !== 0) {
 			this.lock = ((Game.list[this.game].turn%2)*2-1 !== this.side);
