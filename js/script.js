@@ -660,7 +660,7 @@ socket.on('signUpResponse', (data) => {
 	if (data.success){
 		$('#signUpDiv').fadeOut('slow');
 		$currentInput = $inputMessage.focus();
-		navBar.style.display = 'inline-block';
+		navBar.style.display = "inline-block";
 		username = data.username;
 		connected = true;
 		if (data.id !== undefined) {
@@ -668,7 +668,7 @@ socket.on('signUpResponse', (data) => {
 		}
 		if (data.watching){
 			watching = true;
-			uiDiv.style.display = 'inline-block';
+			uiDiv.style.display = "inline-block";
 		}
 		else {
 			socket.emit('joinGame');
@@ -688,7 +688,9 @@ socket.on('joinGameResponse', (data) => {
 		myName.innerHTML = username;
 		gid = data.id;
 		watching = false;
-		uiDiv.style.display = 'inline-block';
+		uiDiv.style.display = "inline-block";
+		undo.style.display = "inline-block";
+		concede.style.display = "inline-block";
 		board.clearBoard();
 	}
 	else {
