@@ -3,7 +3,7 @@ var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
 //const AI_MM = require('AI-MM');
-//var AI_MM_ID = 0;
+var AI_MM_ID = 0;
 //const ai_mm = new AI_MM('AI-MM');
 
 server.listen(process.env.PORT || 3000);
@@ -46,6 +46,7 @@ class Game {
 		}
 		// add player
 		this.players.push(player.name);
+		player.game = this.id;
 		this.num_of_players++;
 		player.socket.emit('joinGameResponse', {
 			success: true,
@@ -64,6 +65,7 @@ class Game {
 	watch(player){
 		// add player
 		this.spectators.push(player.name);
+		player.game = this.id;
 		player.socket.emit('watchGameResponse', {
 			success: true,
 			id: this.id,
@@ -336,8 +338,8 @@ class Game {
 	}
 	// static - create game
 	static createGame(size){
-		new Game(size);
 		console.log('New game ' + (100+GAME_ID-1) + ' created.');
+		return new Game(size);
 	}
 	// static - get all valid game ids
 	static getGames(){
@@ -581,6 +583,22 @@ io.sockets.on('connection', function (socket) {
 		else
 			p.joinGame();
 	});
+	// create game +
+	socket.on('createGame', data => {
+		// get Player
+		var p = Player.list[socket.name];
+		if (!p) {
+			socket.emit('err', {
+				msg: 'Player does not exist.'
+			});
+			return;
+		}
+		// create game
+		var game = Game.createGame(SIZE);
+		p.reset();
+		game.join(p);
+		game.update();
+	});
 	// get game list
 	socket.on('getCurrentGames', data => {
 		var games = Game.getGames();
@@ -668,10 +686,12 @@ io.sockets.on('connection', function (socket) {
 			});
 			return;
 		}
-		console.log('ai added.');
-		let ai = new AI_MM('AI-MM' + AI_MM_ID++);
-		ai.connect(game);
+		let AI = require('AI-MM');
+		let ai = new AI('AI-MM' + AI_MM_ID++);
+		ai.init();
+		ai.connect(game.id);
 		ai.run();
+		console.log('ai added.');
 	});*/
 	// put piece
 	socket.on('put', data => {

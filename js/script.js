@@ -20,15 +20,20 @@ var watch = document.getElementById("watch");
 var play = document.getElementById("play");
 var roomDiv = document.getElementById("roomDiv");
 var mode = '';
+// back button
 var back = document.createElement("a");
-//back.innerHTML = "";
-//back.classList.add("btn");
-//back.classList.add("btn-primary");
 back.classList.add("back");
 back.href = "#";
+// ?
 var inback = document.createElement("a");
 inback.href = "#";
 back.appendChild(inback);
+// create button +
+var create = document.createElement("BUTTON");
+create.classList.add("btn");
+create.classList.add("btn-primary");
+create.classList.add("gameRoom");
+create.onclick = createGame;
 
 watch.onclick = () => {
 	goBack();
@@ -78,6 +83,7 @@ const showRooms = (data) => {
 		list.appendChild(node);
 	}
 	roomDiv.appendChild(list);
+	if (mode === 'join') roomDiv.appendChild(create);
 	roomDiv.appendChild(back);
 	roomDiv.style.width = "100%";
 	roomDiv.style.paddingLeft = "40px";
@@ -97,6 +103,10 @@ const joinGame = (id) => {
 	});
 	goBack();
 }
+
+const createGame = () => {
+	socket.emit('createGame');
+};
 
 
 // game
