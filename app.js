@@ -338,7 +338,7 @@ class Game {
 	}
 	// static - create game
 	static createGame(size){
-		console.log('New game ' + (100+GAME_ID-1) + ' created.');
+		console.log('New game ' + (100+GAME_ID) + ' created.');
 		return new Game(size);
 	}
 	// static - get all valid game ids
@@ -595,6 +595,14 @@ io.sockets.on('connection', function (socket) {
 		}
 		// create game
 		var game = Game.createGame(SIZE);
+		// remove from previous game
+		if (p.game !== undefined) {
+			var pregame = Game.list[p.game];
+			if (pregame) {
+				pregame.removePlayer(p.name);
+				pregame.removeSpectator(p.name);
+			}
+		}
 		p.reset();
 		game.join(p);
 		game.update();
