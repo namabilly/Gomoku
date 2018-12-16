@@ -395,8 +395,10 @@ class Player {
 	}
 	// reset player info *
 	reset(){
+		this.game = undefined;
 		this.lock = false;
 		this.side = 0;
+		this.opponent = undefined;
 		this.watching = false;
 	}
 	// static - update all players *
@@ -470,7 +472,7 @@ io.sockets.on('connection', function (socket) {
 		// trim name
 		data.name = data.name.trim();
 		// invalid names
-		if (!data.name || data.name.length == 0)
+		if (!data.name || data.name.length === 0)
 			socket.emit('signUpResponse', {success:false, msg:'Name invalid, empty name is not accepted.'}); 
 		// name exists
 		else if (data.name in Player.list)
@@ -583,7 +585,7 @@ io.sockets.on('connection', function (socket) {
 		else
 			p.joinGame();
 	});
-	// create game +
+	// create game
 	socket.on('createGame', data => {
 		// get Player
 		var p = Player.list[socket.name];
@@ -614,7 +616,7 @@ io.sockets.on('connection', function (socket) {
 			games: games
 		});
 	})
-	// watch game
+	// watch game +
 	socket.on('watchGame', data => {
 		// get Player
 		var p = Player.list[socket.name];
@@ -639,20 +641,24 @@ io.sockets.on('connection', function (socket) {
 			// already watching
 			if (p.watching) {
 				socket.emit('err', {
-					msg: 'Cannot watch your own game!'
+					msg: 'You are already watching this game!'
 				});
 				return;
 			}
 		}
 		// watch game
 		if (game) {
+			if (p.game !== undefined) {
+				// remove from previous game
+				var pregame = Game.list[p.game];
+				if (pregame) {
+					pregame.removePlayer(p.name);
+					pregame.removeSpectator(p.name);
+				}
+			}
+			p.reset();
 			game.watch(p);
 			p.watching = true;
-			if (p.game !== undefined) {
-				var g = Game.list[p.game];
-				g.removePlayer(p.name);
-				g.removeSpectator(p.name);
-			}
 			p.game = data.id;
 			game.update();
 		}
