@@ -28,12 +28,7 @@ back.href = "#";
 var inback = document.createElement("a");
 inback.href = "#";
 back.appendChild(inback);
-// create button +
-var create = document.createElement("BUTTON");
-create.classList.add("btn");
-create.classList.add("btn-primary");
-create.classList.add("gameRoom");
-create.onclick = createGame;
+
 
 watch.onclick = () => {
 	goBack();
@@ -82,8 +77,8 @@ const showRooms = (data) => {
 		node.appendChild(btn);
 		list.appendChild(node);
 	}
+	if (mode === 'join') list.appendChild(create);
 	roomDiv.appendChild(list);
-	if (mode === 'join') roomDiv.appendChild(create);
 	roomDiv.appendChild(back);
 	roomDiv.style.width = "100%";
 	roomDiv.style.paddingLeft = "40px";
@@ -108,6 +103,17 @@ const createGame = () => {
 	socket.emit('createGame');
 };
 
+// create button +
+var create = document.createElement("BUTTON");
+create.classList.add("btn");
+create.classList.add("btn-primary");
+create.classList.add("gameRoom");
+var createText = document.createTextNode('New');
+create.appendChild(createText);
+create.onclick = () => {
+	createGame();
+	goBack();
+};
 
 // game
 class Board {
