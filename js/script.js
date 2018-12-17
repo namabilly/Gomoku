@@ -24,11 +24,17 @@ var mode = '';
 var back = document.createElement("a");
 back.classList.add("back");
 back.href = "#";
-// ?
+// back arrow
 var inback = document.createElement("a");
 inback.href = "#";
 back.appendChild(inback);
-
+// create button +
+var create = document.createElement("BUTTON");
+create.classList.add("btn");
+create.classList.add("btn-primary");
+create.classList.add("gameRoom");
+var createText = document.createTextNode('New');
+create.appendChild(createText);
 
 watch.onclick = () => {
 	goBack();
@@ -40,6 +46,11 @@ play.onclick = () => {
 	goBack();
 	mode = 'join';
 	socket.emit('getCurrentGames', {});
+};
+
+create.onclick = () => {
+	createGame();
+	goBack();
 };
 
 const goBack = () => {
@@ -103,17 +114,6 @@ const createGame = () => {
 	socket.emit('createGame');
 };
 
-// create button +
-var create = document.createElement("BUTTON");
-create.classList.add("btn");
-create.classList.add("btn-primary");
-create.classList.add("gameRoom");
-var createText = document.createTextNode('New');
-create.appendChild(createText);
-create.onclick = () => {
-	createGame();
-	goBack();
-};
 
 // game
 class Board {
@@ -124,6 +124,7 @@ class Board {
 		this.color = color;
 		this.pieces = [];
 		this.turn = 0;
+		this.id = -1;
 	}
 	draw(){
 		ctx.setTransform(1, 0, 0, 1, this.position.x, this.position.y);
@@ -133,6 +134,9 @@ class Board {
 		ctx.fillRect(-this.format.lineWidth, -this.format.lineWidth, 
 			(this.size.width-1)*this.format.spacing+this.format.lineWidth,
 			(this.size.height-1)*this.format.spacing+this.format.lineWidth);
+		ctx.fillStyle = "#000000";
+		ctx.font = "30px Arial";
+		ctx.fillText(this.id+100, 275, -25);
 		ctx.fillStyle = this.color;
 		for(var x=0;x<this.size.width;x++){
 			for(var y=0;y<this.size.height;y++){
@@ -342,6 +346,7 @@ const updateBoard = data => {
 		lock = data.lock;
 		side = data.side;
 		board.clearBoard();
+		board.id = data.id;
 		board.load(data.pieces);
 		mySide.classList.remove("black");
 		oppoSide.classList.remove("black");
@@ -392,6 +397,7 @@ const updateBoard = data => {
 	if (watching) {
 		lock = data.lock;
 		board.clearBoard();
+		board.id = data.id;
 		board.load(data.pieces);
 		myName.innerHTML = data.players.shift() || "";
 		oppoName.innerHTML = data.players.shift() || "";
