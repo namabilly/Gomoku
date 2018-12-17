@@ -2,7 +2,7 @@ var express = require('express');
 var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
-//const AI_MM = require('AI-MM');
+const AI_MM = require('AI-MM');
 var AI_MM_ID = 0;
 //const ai_mm = new AI_MM('AI-MM');
 
@@ -409,7 +409,8 @@ class Player {
 	}
 	// static - create player - by name and socket
 	static addPlayer(name, socket){
-		Object.defineProperty(socket, 'name', {value:name});
+		//Object.defineProperty(socket, 'name', {value:name});
+		socket.name = name;
 		new Player(socket);
 		console.log('New player ' + name + ' joined.');
 		socket.emit('signUpResponse', {success:true, username:name});
@@ -480,7 +481,8 @@ io.sockets.on('connection', function (socket) {
 			if (!Player.list[data.name].isConnected){
 				var p = Player.list[data.name];
 				p.isConnected = true;
-				Object.defineProperty(socket, 'name', {value:data.name});
+				//Object.defineProperty(socket, 'name', {value:data.name});
+				socket.name = data.name;
 				p.socket = socket;
 				socket.broadcast.emit('playerReconnected', {
 					username: data.name
@@ -616,7 +618,7 @@ io.sockets.on('connection', function (socket) {
 			games: games
 		});
 	})
-	// watch game +
+	// watch game
 	socket.on('watchGame', data => {
 		// get Player
 		var p = Player.list[socket.name];
@@ -664,7 +666,7 @@ io.sockets.on('connection', function (socket) {
 		}
 	});
 	// not ready *
-	/*socket.on('addAI', data => {
+	socket.on('addAI', data => {
 		// get Player
 		var p = Player.list[socket.name];
 		if (!p) {
@@ -700,13 +702,11 @@ io.sockets.on('connection', function (socket) {
 			});
 			return;
 		}
-		let AI = require('AI-MM');
-		let ai = new AI('AI-MM' + AI_MM_ID++);
-		ai.init();
+		let ai = new AI_MM('AI-MM' + AI_MM_ID++);
 		ai.connect(game.id);
 		ai.run();
 		console.log('ai added.');
-	});*/
+	});
 	// put piece
 	socket.on('put', data => {
 		// get Player
