@@ -17,7 +17,7 @@ app.use('/css', express.static(__dirname + '/css'));
 app.use('/img', express.static(__dirname + '/img'));
 
 GAME_ID = 0;
-//PLAYER_ID = 0;
+num_of_user = 0;
 const SIZE = {x:15, y:15};
 
 class Game {
@@ -27,12 +27,13 @@ class Game {
 		this.players = [];
 		this.num_of_players = 0;
 		this.spectators = [];
+		this.num_of_spectators = 0;
 		this.pieces = [];
 		this.turn = 0;
 		this.status = 0; // -1 black, 1 white
 		this.conceder = undefined; // the one who concedes
 		this.create_time = Date.now();
-		this.time_limit = 300000; // 5 min
+		this.time_limit = 600000; // 10 min
 		this.time_left = this.time_limit;
 		this.timeUpdate();
 		Game.list[this.id] = this;
@@ -66,6 +67,7 @@ class Game {
 		// add player
 		this.spectators.push(player.name);
 		player.game = this.id;
+		this.num_of_spectators++;
 		player.socket.emit('watchGameResponse', {
 			success: true,
 			id: this.id,
@@ -148,6 +150,10 @@ class Game {
 		var tick = setTimeout(function(){
 			if (that.time_left <= 0) {
 				clearTimeout(tick);
+				for (let i in that.players) {
+					var p = Player.list[that.players[i]];
+					p.socket.emit('err', {msg: 'Time up! You\'ve been removed from the current game.'});
+				}
 				Game.endGame(that.id);
 				return;
 			}
@@ -155,11 +161,11 @@ class Game {
 			//console.log(that.time_left);
 			for (let i in that.players) {
 				var p = Player.list[that.players[i]];
-				p.socket.emit('updateTime', {time: that.time_left});
+				p.socket.emit('updateTime', {time: that.time_left, num: num_of_user});
 			}
 			for (let i in that.spectators) {
 				var p = Player.list[that.spectators[i]];
-				p.socket.emit('updateTime', {time: that.time_left});
+				p.socket.emit('updateTime', {time: that.time_left, num: num_of_user});
 			}
 			that.timeUpdate();
 		}, 1000);
@@ -277,6 +283,7 @@ class Game {
 		for (let i in this.spectators) {
 			if (this.spectators[i] === name) {
 				this.spectators.splice(i, 1);
+				this.num_of_spectators--;
 				break;
 			}
 		}
@@ -289,7 +296,7 @@ class Game {
 		this.conceder = undefined;
 		this.update();
 		this.create_time = Date.now();
-		this.time_limit = 300000;
+		this.time_limit = 600000;
 		this.time_left = this.time_limit;
 		this.timeUpdate();
 	}
@@ -307,7 +314,7 @@ class Game {
 		this.status = 0;
 		this.conceder = undefined;
 		this.create_time = Date.now();
-		this.time_limit = 300000;
+		this.time_limit = 600000;
 		this.time_left = this.time_limit;
 		this.timeUpdate();
 	}
@@ -377,6 +384,7 @@ class Player {
 		this.watching = false;
 		this.isConnected = true;
 		Player.list[this.name] = this;
+		num_of_user++;
 	}
 	// join game *
 	joinGame(){
@@ -425,9 +433,11 @@ class Player {
 		}
 		if (Player.list[name]) {
 			Player.list[name].socket.broadcast.emit('playerLeft', {
-				username: name
+				username: name,
+				num: num_of_user
 			});
 		}
+		num_of_user--;
 		delete Player.list[name];
 		console.log('Player ' + name + ' left.');
 	}
@@ -448,7 +458,7 @@ io.sockets.on('connection', function (socket) {
 	console.log('New Connection');
 	// disconnect
 	// remove player if no attempt to reconnect
-	socket.on('disconnect', () => {
+	socket.on('disconnect', data => {
 		if (Player.list[socket.name]){
 			console.log('Player ' + socket.name + ' disconnected.');
 			socket.broadcast.emit('playerDisconnected', {
@@ -506,7 +516,8 @@ io.sockets.on('connection', function (socket) {
 		else {
 			Player.addPlayer(data.name, socket); 
 			socket.broadcast.emit('playerJoined', {
-				username: data.name
+				username: data.name,
+				num: num_of_user
 			});
 		}
 	});
@@ -917,6 +928,7 @@ io.sockets.on('connection', function (socket) {
 		// update
 		game.update();
 	});
+	
 	
 	// chat content
 	// when the client emits 'newMessage', this listens and executes

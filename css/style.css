@@ -414,6 +414,32 @@ button.gameRoom {
 	background-color: #223344;
 }
 
+p#usernumber {
+	display: block;
+	position: fixed;
+	z-index: 3;
+	padding: 0px;
+	top: 0;
+	right: 0;
+	height: 15px;
+	font-size: 10px;
+	background-color: #AABBCC;
+	border: solid #AABBCC;
+	color: #000000;
+}
+
+p#spectatornumber {
+	display: block;
+	position: fixed;
+	z-index: 3;
+	padding: 0px;
+	top: 15px;
+	right: 0;
+	height: 15px;
+	font-size: 10px;
+	color: #000000;
+}
+
 /* Pages */
 
 .pages {

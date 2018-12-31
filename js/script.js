@@ -504,7 +504,7 @@ const doConcede = () => {
 
 // nav
 var navBar = document.getElementsByClassName("navBar")[0];
-
+var usernum = document.getElementById("usernumber");
 
 // dialog
 var dialogoverlay = document.getElementById("dialogoverlay");
@@ -761,6 +761,7 @@ socket.on('updateBoard', (data) => {
 
 socket.on('updateTime', (data) => {
 	updateTime(data);
+	usernum.innerHTML = data.num + " online";
 });
 
 socket.on('newMessage', (data) => {
