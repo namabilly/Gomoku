@@ -276,7 +276,7 @@ class Game {
 				break;
 			}
 		}
-		this.update();
+		if(this.status===0) this.update();
 	}
 	// remove spectator - by name
 	removeSpectator(name){
@@ -506,7 +506,7 @@ io.sockets.on('connection', function (socket) {
 				});
 				if (p.game !== undefined) {
 					var game = Game.list[p.game];
-					if (game) game.update();
+					if (game&&game.status===0) game.update();
 				}
 			}
 			// name exists
