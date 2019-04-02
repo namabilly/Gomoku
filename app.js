@@ -198,6 +198,7 @@ class Game {
 			var pie = this.pieces[i];
 			matrix[pie.position.x*SIZE.x + pie.position.y] = (pie.turn%2) * 2 - 1;
 		}
+		// horizontal
 		for (let x=0;x<SIZE.x;x++) {
 			var temp = 0;
 			for (let y=0;y<SIZE.y;y++) {
@@ -208,6 +209,7 @@ class Game {
 				if (temp >= 5) return 1;
 			}
 		}
+		// vertical
 		for (let y=0;y<SIZE.y;y++) {
 			var temp = 0;
 			for (let x=0;x<SIZE.x;x++) {
@@ -220,7 +222,7 @@ class Game {
 		}
 		for (let x=0;x<SIZE.x;x++) {
 			var temp = 0;
-			for (let c=0;c<x;c++) {	
+			for (let c=0;c<=x;c++) {	
 				temp += matrix[c*SIZE.x + x-c];
 				if (temp*matrix[c*SIZE.x + x-c] <= 0)
 					temp = matrix[c*SIZE.x + x-c];
@@ -240,7 +242,7 @@ class Game {
 		}
 		for (let x=0;x<SIZE.x;x++) {
 			var temp = 0;
-			for (let c=0;c<x;c++) {	
+			for (let c=0;c<=x;c++) {	
 				temp += matrix[c*SIZE.x + SIZE.x-1-x+c];
 				if (temp*matrix[c*SIZE.x + SIZE.x-1-x+c] <= 0)
 					temp = matrix[c*SIZE.x + SIZE.x-1-x+c];
@@ -250,7 +252,7 @@ class Game {
 		}
 		for (let x=0;x<SIZE.x-1;x++) {
 			var temp = 0;
-			for (let c=0;c<x;c++) {	
+			for (let c=0;c<=x;c++) {	
 				temp += matrix[c + (SIZE.x-1-x+c)*SIZE.x];
 				if (temp*matrix[c + (SIZE.x-1-x+c)*SIZE.x] <= 0)
 					temp = matrix[c + (SIZE.x-1-x+c)*SIZE.x];
