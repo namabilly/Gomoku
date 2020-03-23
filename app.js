@@ -2,8 +2,8 @@ var express = require('express');
 var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
-const AI_MM = require('AI-MM');
-var AI_MM_ID = 0;
+//const AI_MM = require('AI-MM');
+//var AI_MM_ID = 0;
 //const ai_mm = new AI_MM('AI-MM');
 
 server.listen(process.env.PORT || 3000);
